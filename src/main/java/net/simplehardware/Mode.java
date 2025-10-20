@@ -1,5 +1,36 @@
 package net.simplehardware;
 
 public enum Mode {
-    FLOOR, WALL, START, FINISH
+    FLOOR,
+    WALL,
+    START,
+    FINISH,
+    // Add all form types
+    FORM_A,
+    FORM_B,
+    FORM_C,
+    FORM_D,
+    FORM_E,
+    FORM_F,
+    FORM_G,
+    FORM_H,
+    FORM_I,
+    FORM_J,
+    FORM_K,
+    FORM_L,
+    FORM_M,
+    FORM_N,
+    FORM_O,
+    FORM_P,
+    FORM_Q,
+    FORM_R,
+    FORM_S,
+    FORM_T,
+    FORM_U,
+    FORM_V,
+    FORM_W,
+    FORM_X,
+    FORM_Y,
+    FORM_Z,
+    SHEET,
 }
