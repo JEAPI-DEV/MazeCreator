@@ -102,32 +102,7 @@ public class ToolbarFactory {
         JButton sheetBtn = new JButton("Sheet");
         sheetBtn.addActionListener(e -> editor.setCurrentMode(Mode.SHEET));
 
-        JButton validateBtn = new JButton("Validate");
-        validateBtn.addActionListener(e -> {
-            MazeValidator validator = new MazeValidator();
-            MazeValidator.ValidationResult result = validator.validateMaze(
-                grid
-            );
 
-            StringBuilder message = new StringBuilder();
-            if (result.isValid) {
-                message.append("Maze is valid!\n");
-            } else {
-                message.append("Maze has errors:\n");
-                for (String error : result.errors) {
-                    message.append("- ").append(error).append("\n");
-                }
-            }
-
-            if (!result.warnings.isEmpty()) {
-                message.append("\nWarnings:\n");
-                for (String warning : result.warnings) {
-                    message.append("- ").append(warning).append("\n");
-                }
-            }
-
-            JOptionPane.showMessageDialog(editor, message.toString());
-        });
 
         JButton templatesBtn = new JButton("Templates");
         templatesBtn.addActionListener(e -> {
@@ -171,7 +146,6 @@ public class ToolbarFactory {
         panel.add(sheetBtn);
         panel.add(loadBtn);
         panel.add(saveBtn);
-        panel.add(validateBtn);
         panel.add(templatesBtn);
 
         return panel;
