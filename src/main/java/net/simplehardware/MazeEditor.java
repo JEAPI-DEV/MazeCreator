@@ -6,7 +6,6 @@ import java.awt.*;
 public class MazeEditor extends JFrame {
     private Mode currentMode = Mode.FLOOR;
     private int currentPlayerId = 1;
-    private final JSpinner gridSizeSpinner;
 
     public MazeEditor() {
         setTitle("Maze Editor");
@@ -21,8 +20,6 @@ public class MazeEditor extends JFrame {
         ToolbarFactory toolbarFactory = new ToolbarFactory(this, mazeGrid);
         add(toolbarFactory.createTopToolbar(), BorderLayout.NORTH);
         add(toolbarFactory.createLeftToolbar(), BorderLayout.WEST);
-
-        gridSizeSpinner = toolbarFactory.getGridSizeSpinner();
 
         setVisible(true);
     }

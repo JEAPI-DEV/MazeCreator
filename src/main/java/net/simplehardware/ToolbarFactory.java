@@ -78,16 +78,13 @@ public class ToolbarFactory {
         JButton topWall = new JButton("Edge Walls");
         topWall.setAlignmentX(Component.CENTER_ALIGNMENT);
         topWall.addActionListener(e -> {
-            for (int x = 0; x < grid.getCells().length; x++)
-                grid.getCells()[x][0].setMode(Mode.WALL, 0);
-            int maxY = grid.getCells().length - 1;
-            for (int x = 0; x < grid.getCells().length; x++)
-                grid.getCells()[x][maxY].setMode(Mode.WALL, 0);
-            for (int y = 0; y < grid.getCells().length; y++)
-                grid.getCells()[0][y].setMode(Mode.WALL, 0);
-            int maxX = grid.getCells().length - 1;
-            for (int y = 0; y < grid.getCells().length; y++)
-                grid.getCells()[maxX][y].setMode(Mode.WALL, 0);
+            int n = grid.getCells().length;
+            for (int i = 0; i < n; i++) {
+                grid.getCells()[i][0].setMode(Mode.WALL, 0);
+                grid.getCells()[i][n - 1].setMode(Mode.WALL, 0);
+                grid.getCells()[0][i].setMode(Mode.WALL, 0);
+                grid.getCells()[n - 1][i].setMode(Mode.WALL, 0);
+            }
         });
 
         JButton genBtn = new JButton("Gen Labyrinth");
@@ -100,9 +97,18 @@ public class ToolbarFactory {
                 JOptionPane.showMessageDialog(editor, "Generated a balanced maze for 4 players.");
             }
         });
+
+        JTextArea note = new JTextArea("Note: Generation\nis Experimental\n(works better with\nodd Grid sizes.)");
+        note.setEditable(false);
+        note.setOpaque(false);
+        note.setFocusable(false);
+        note.setAlignmentX(Component.CENTER_ALIGNMENT);
+
         panel.add(topWall);
         panel.add(Box.createVerticalStrut(10));
         panel.add(genBtn);
+        panel.add(Box.createVerticalStrut(5));
+        panel.add(note);
 
         return panel;
     }
