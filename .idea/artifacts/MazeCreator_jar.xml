@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="MazeCreator:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/MazeCreator_jar</output-path>
+    <root id="archive" name="MazeCreator.jar">
+      <element id="module-output" name="MazeCreator" />
+    </root>
+  </artifact>
+</component>
