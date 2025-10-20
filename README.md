@@ -13,6 +13,7 @@ This project is a maze creator application built in Java. It allows users to cre
 ### Important
 - **Enhanced Export**: JSON format compatible with Maze Runner game engine
 - **Visual Feedback**: Current mode indicator and player-specific coloring
+- **Zoom Function**: You can zoom either with CTRL + Mousewheel or with CTRL +/-
 
 ## Project Structure
 
@@ -65,7 +66,7 @@ The enhanced maze format supports:
 *   **`MazeIO.java`**: Advanced JSON import/export with form encoding support
 *   **`ToolbarFactory.java`**: UI factory creating main toolbar and organized forms panel
 
-### Advanced Features
+### Some Features
 *   **`MazeValidator.java`**: Comprehensive maze validation with form sequence checking
 *   **`MazeTemplates.java`**: Template system with pre-built balanced maze layouts
 *   **`MazeInfoData.java`**: Enhanced data structure supporting form definitions

@@ -22,17 +22,30 @@ public class MazeGrid {
         scrollPane.getVerticalScrollBar().setUnitIncrement(16);
         scrollPane.getHorizontalScrollBar().setUnitIncrement(16);
         scrollPane.addMouseWheelListener(new ZoomHandler());
+        ZoomHandler zoomHandler = new ZoomHandler();
+        scrollPane.addMouseWheelListener(zoomHandler);
 
-        // keyboard shortcut ctrl+0 to reset zoom
+
         scrollPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
-                .put(KeyStroke.getKeyStroke("control 0"), "resetZoom");
-        scrollPane.getActionMap().put("resetZoom", new AbstractAction() {
+                .put(KeyStroke.getKeyStroke("control EQUALS"), "zoomIn");
+        scrollPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
+                .put(KeyStroke.getKeyStroke("control PLUS"), "zoomIn");
+        scrollPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
+                .put(KeyStroke.getKeyStroke("control MINUS"), "zoomOut");
+
+        scrollPane.getActionMap().put("zoomIn", new AbstractAction() {
             @Override
             public void actionPerformed(java.awt.event.ActionEvent e) {
-                zoomScale = 1.0;
-                applyZoom();
+                zoomHandler.keyboardZoom(true);
             }
         });
+        scrollPane.getActionMap().put("zoomOut", new AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                zoomHandler.keyboardZoom(false);
+            }
+        });
+
     }
 
     private void buildGridPanel() {
@@ -141,5 +154,22 @@ public class MazeGrid {
             int newY = (int) ((viewPos.y + mouse.y) * scaleFactor - mouse.y);
             scrollPane.getViewport().setViewPosition(new Point(Math.max(0, newX), Math.max(0, newY)));
         }
+
+        public void keyboardZoom(boolean zoomIn) {
+            double oldScale = zoomScale;
+            double MIN_ZOOM = 0.25;
+            double MAX_ZOOM = 3.0;
+            double STEP = 0.1;
+
+            zoomScale = zoomIn
+                    ? Math.min(zoomScale + STEP, MAX_ZOOM)
+                    : Math.max(zoomScale - STEP, MIN_ZOOM);
+
+            if (Math.abs(zoomScale - 1.0) < 0.05) zoomScale = 1.0;
+            if (zoomScale == oldScale) return;
+
+            applyZoom();
+        }
+
     }
 }
