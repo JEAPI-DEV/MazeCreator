@@ -158,12 +158,22 @@ public class ToolbarFactory {
     }
 
     public JPanel createFormsToolbar() {
-        JPanel panel = new JPanel();
-        panel.setLayout(new GridLayout(0, 6, 2, 2));
-        panel.setBorder(BorderFactory.createTitledBorder("Forms"));
+        JPanel mainPanel = new JPanel();
+        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+        mainPanel.setBorder(BorderFactory.createTitledBorder("Forms"));
 
-        // Add form buttons A-Z
-        Mode[] forms = {
+        // Create sections for better organization
+        JPanel section1 = new JPanel(new GridLayout(2, 4, 2, 2));
+        section1.setBorder(BorderFactory.createTitledBorder("A-H"));
+
+        JPanel section2 = new JPanel(new GridLayout(2, 4, 2, 2));
+        section2.setBorder(BorderFactory.createTitledBorder("I-P"));
+
+        JPanel section3 = new JPanel(new GridLayout(2, 5, 2, 2));
+        section3.setBorder(BorderFactory.createTitledBorder("Q-Z"));
+
+        // Add forms A-H
+        Mode[] formsAH = {
             Mode.FORM_A,
             Mode.FORM_B,
             Mode.FORM_C,
@@ -172,6 +182,17 @@ public class ToolbarFactory {
             Mode.FORM_F,
             Mode.FORM_G,
             Mode.FORM_H,
+        };
+        for (Mode form : formsAH) {
+            String letter = form.name().substring(5);
+            JButton btn = new JButton(letter);
+            btn.setPreferredSize(new Dimension(35, 25));
+            btn.addActionListener(e -> editor.setCurrentMode(form));
+            section1.add(btn);
+        }
+
+        // Add forms I-P
+        Mode[] formsIP = {
             Mode.FORM_I,
             Mode.FORM_J,
             Mode.FORM_K,
@@ -180,6 +201,17 @@ public class ToolbarFactory {
             Mode.FORM_N,
             Mode.FORM_O,
             Mode.FORM_P,
+        };
+        for (Mode form : formsIP) {
+            String letter = form.name().substring(5);
+            JButton btn = new JButton(letter);
+            btn.setPreferredSize(new Dimension(35, 25));
+            btn.addActionListener(e -> editor.setCurrentMode(form));
+            section2.add(btn);
+        }
+
+        // Add forms Q-Z
+        Mode[] formsQZ = {
             Mode.FORM_Q,
             Mode.FORM_R,
             Mode.FORM_S,
@@ -191,21 +223,29 @@ public class ToolbarFactory {
             Mode.FORM_Y,
             Mode.FORM_Z,
         };
-
-        for (Mode form : forms) {
+        for (Mode form : formsQZ) {
             String letter = form.name().substring(5);
             JButton btn = new JButton(letter);
-            btn.setPreferredSize(new Dimension(40, 30));
+            btn.setPreferredSize(new Dimension(35, 25));
             btn.addActionListener(e -> editor.setCurrentMode(form));
-            panel.add(btn);
+            section3.add(btn);
         }
 
-        // Add sheet button
-        JButton sheetBtn = new JButton("Sheet");
-        sheetBtn.addActionListener(e -> editor.setCurrentMode(Mode.SHEET));
-        panel.add(sheetBtn);
+        // Add special items section
+        JPanel specialSection = new JPanel(new FlowLayout());
+        specialSection.setBorder(BorderFactory.createTitledBorder("Special"));
 
-        return panel;
+        JButton sheetBtn = new JButton("Sheet");
+        sheetBtn.setPreferredSize(new Dimension(60, 25));
+        sheetBtn.addActionListener(e -> editor.setCurrentMode(Mode.SHEET));
+        specialSection.add(sheetBtn);
+
+        mainPanel.add(section1);
+        mainPanel.add(section2);
+        mainPanel.add(section3);
+        mainPanel.add(specialSection);
+
+        return mainPanel;
     }
 
     public JSpinner getGridSizeSpinner() {
