@@ -49,6 +49,7 @@ public class CellButton extends JPanel {
         Mode current = editor.getCurrentMode();
         int pid = (current == Mode.START ||
                 current == Mode.FINISH ||
+                current == Mode.SHEET ||
                 isFormMode(current))
             ? editor.getCurrentPlayerId()
             : 0;
@@ -57,7 +58,10 @@ public class CellButton extends JPanel {
 
     public void setMode(Mode m, int pid) {
         this.mode = m;
-        this.playerId = (m == Mode.START || m == Mode.FINISH || isFormMode(m))
+        this.playerId = (m == Mode.START ||
+                m == Mode.FINISH ||
+                m == Mode.SHEET ||
+                isFormMode(m))
             ? pid
             : 0;
         updateColor();
