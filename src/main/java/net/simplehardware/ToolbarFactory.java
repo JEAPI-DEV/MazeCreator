@@ -46,51 +46,11 @@ public class ToolbarFactory {
             grid.resizeGrid(newSize);
         });
 
-        JButton clearBtn = new JButton("Clear All");
-        clearBtn.addActionListener(e -> {
-            for (CellButton[] row : grid.getCells()) {
-                for (CellButton cell : row) {
-                    cell.setMode(Mode.FLOOR, 0);
-                }
-            }
-        });
-
-        JButton loadBtn = new JButton("Load JSON");
-        loadBtn.addActionListener(e ->
-            MazeIO.loadFromJson(editor, grid, gridSizeSpinner)
-        );
-
-        JButton saveBtn = new JButton("Export JSON");
-        saveBtn.addActionListener(e -> MazeIO.exportJson(editor, grid));
-
         JLabel formsLabel = new JLabel("Forms:");
         String[] formOptions = {
-            "A",
-            "B",
-            "C",
-            "D",
-            "E",
-            "F",
-            "G",
-            "H",
-            "I",
-            "J",
-            "K",
-            "L",
-            "M",
-            "N",
-            "O",
-            "P",
-            "Q",
-            "R",
-            "S",
-            "T",
-            "U",
-            "V",
-            "W",
-            "X",
-            "Y",
-            "Z",
+            "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K",
+            "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V",
+            "W", "X", "Y", "Z",
         };
         JComboBox<String> formsDropdown = new JComboBox<>(formOptions);
         formsDropdown.addActionListener(e -> {
@@ -111,19 +71,36 @@ public class ToolbarFactory {
         panel.add(playerSpinner);
         panel.add(gridSizeLabel);
         panel.add(gridSizeSpinner);
-        panel.add(clearBtn);
         panel.add(formsLabel);
         panel.add(formsDropdown);
         panel.add(sheetBtn);
-        panel.add(loadBtn);
-        panel.add(saveBtn);
         return panel;
     }
 
     public JPanel createLeftToolbar() {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        panel.setBorder(BorderFactory.createTitledBorder("Border Tools"));
+        panel.setBorder(BorderFactory.createTitledBorder("Tools"));
+
+        JButton loadBtn = new JButton("Load JSON");
+        loadBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
+        loadBtn.addActionListener(e ->
+                MazeIO.loadFromJson(editor, grid, gridSizeSpinner)
+        );
+
+        JButton saveBtn = new JButton("Export JSON");
+        saveBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
+        saveBtn.addActionListener(e -> MazeIO.exportJson(editor, grid));
+
+        JButton clearBtn = new JButton("Clear All");
+        clearBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
+        clearBtn.addActionListener(e -> {
+            for (CellButton[] row : grid.getCells()) {
+                for (CellButton cell : row) {
+                    cell.setMode(Mode.FLOOR, 0);
+                }
+            }
+        });
 
         JButton topWall = new JButton("Edge Walls");
         topWall.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -162,16 +139,19 @@ public class ToolbarFactory {
         note.setFocusable(false);
         note.setAlignmentX(Component.CENTER_ALIGNMENT);
 
+        panel.add(clearBtn);
+        panel.add(Box.createVerticalStrut(10));
+        panel.add(loadBtn);
+        panel.add(Box.createVerticalStrut(10));
+        panel.add(saveBtn);
+        panel.add(Box.createVerticalStrut(10));
         panel.add(topWall);
         panel.add(Box.createVerticalStrut(10));
         panel.add(genBtn);
         panel.add(Box.createVerticalStrut(5));
         panel.add(note);
 
-        return panel;
-    }
 
-    public JSpinner getGridSizeSpinner() {
-        return gridSizeSpinner;
+        return panel;
     }
 }
