@@ -63,6 +63,45 @@ public class ToolbarFactory {
         JButton saveBtn = new JButton("Export JSON");
         saveBtn.addActionListener(e -> MazeIO.exportJson(editor, grid));
 
+        JLabel formsLabel = new JLabel("Forms:");
+        String[] formOptions = {
+            "A",
+            "B",
+            "C",
+            "D",
+            "E",
+            "F",
+            "G",
+            "H",
+            "I",
+            "J",
+            "K",
+            "L",
+            "M",
+            "N",
+            "O",
+            "P",
+            "Q",
+            "R",
+            "S",
+            "T",
+            "U",
+            "V",
+            "W",
+            "X",
+            "Y",
+            "Z",
+        };
+        JComboBox<String> formsDropdown = new JComboBox<>(formOptions);
+        formsDropdown.addActionListener(e -> {
+            String selected = (String) formsDropdown.getSelectedItem();
+            Mode formMode = Mode.valueOf("FORM_" + selected);
+            editor.setCurrentMode(formMode);
+        });
+
+        JButton sheetBtn = new JButton("Sheet");
+        sheetBtn.addActionListener(e -> editor.setCurrentMode(Mode.SHEET));
+
         JButton validateBtn = new JButton("Validate");
         validateBtn.addActionListener(e -> {
             MazeValidator validator = new MazeValidator();
@@ -127,6 +166,9 @@ public class ToolbarFactory {
         panel.add(gridSizeLabel);
         panel.add(gridSizeSpinner);
         panel.add(clearBtn);
+        panel.add(formsLabel);
+        panel.add(formsDropdown);
+        panel.add(sheetBtn);
         panel.add(loadBtn);
         panel.add(saveBtn);
         panel.add(validateBtn);
