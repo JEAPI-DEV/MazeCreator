@@ -4,7 +4,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
-import java.util.Random;
 
 public class MazeGrid {
     private int gridSize;
@@ -111,50 +110,6 @@ public class MazeGrid {
         }
         gridPanel.revalidate();
         gridPanel.repaint();
-    }
-
-    public void generateRandomMaze(double wallProbability) {
-        if (wallProbability < 0.0) wallProbability = 0.35;
-        if (wallProbability > 1.0) wallProbability = 0.9;
-
-        Random rnd = new Random();
-        for (int x = 0; x < gridSize; x++) {
-            for (int y = 0; y < gridSize; y++) {
-                if (x == 0 || y == 0 || x == gridSize - 1 || y == gridSize - 1) {
-                    cells[x][y].setMode(Mode.WALL, 0);
-                } else {
-                    if (rnd.nextDouble() < wallProbability) {
-                        cells[x][y].setMode(Mode.WALL, 0);
-                    } else {
-                        cells[x][y].setMode(Mode.FLOOR, 0);
-                    }
-                }
-            }
-        }
-        placeRandomStartAndFinish(rnd);
-    }
-
-    private void placeRandomStartAndFinish(Random rnd) {
-        int sx = -1, sy = -1, fx = -1, fy = -1;
-        // find start
-        for (int attempts = 0; attempts < 1000 && (sx == -1); attempts++) {
-            int x = 1 + rnd.nextInt(Math.max(1, gridSize - 2));
-            int y = 1 + rnd.nextInt(Math.max(1, gridSize - 2));
-            if (cells[x][y].getMode() == Mode.FLOOR) {
-                sx = x; sy = y;
-            }
-        }
-        // find finish different from start
-        for (int attempts = 0; attempts < 1000 && (fx == -1); attempts++) {
-            int x = 1 + rnd.nextInt(Math.max(1, gridSize - 2));
-            int y = 1 + rnd.nextInt(Math.max(1, gridSize - 2));
-            if (cells[x][y].getMode() == Mode.FLOOR && (x != sx || y != sy)) {
-                fx = x; fy = y;
-            }
-        }
-
-        if (sx != -1) cells[sx][sy].setMode(Mode.START, 1);
-        if (fx != -1) cells[fx][fy].setMode(Mode.FINISH, 1);
     }
 
     private class ZoomHandler implements MouseWheelListener {

@@ -12,7 +12,7 @@ public class MazeIO {
         if (chooser.showOpenDialog(editor) == JFileChooser.APPROVE_OPTION) {
             try (Reader reader = new FileReader(chooser.getSelectedFile())) {
                 MazeInfoData data = new Gson().fromJson(reader, MazeInfoData.class);
-                applyMazeData(editor, grid, data, gridSizeSpinner);
+                applyMazeData(grid, data, gridSizeSpinner);
                 JOptionPane.showMessageDialog(editor, "Maze loaded successfully!");
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(editor, "Failed to load: " + ex.getMessage());
@@ -20,7 +20,7 @@ public class MazeIO {
         }
     }
 
-    private static void applyMazeData(MazeEditor editor, MazeGrid grid, MazeInfoData data, JSpinner spinner) {
+    private static void applyMazeData(MazeGrid grid, MazeInfoData data, JSpinner spinner) {
         if (data.maze == null) return;
         String[] rows = data.maze.split("/");
         int size = rows.length;

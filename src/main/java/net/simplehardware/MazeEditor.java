@@ -4,11 +4,9 @@ import javax.swing.*;
 import java.awt.*;
 
 public class MazeEditor extends JFrame {
-    private int gridSize = 10;
-    private MazeGrid mazeGrid;
     private Mode currentMode = Mode.FLOOR;
     private int currentPlayerId = 1;
-    private JSpinner gridSizeSpinner;
+    private final JSpinner gridSizeSpinner;
 
     public MazeEditor() {
         setTitle("Maze Editor");
@@ -16,7 +14,8 @@ public class MazeEditor extends JFrame {
         setSize(900, 850);
         setLayout(new BorderLayout());
 
-        mazeGrid = new MazeGrid(gridSize, this);
+        int gridSize = 10;
+        MazeGrid mazeGrid = new MazeGrid(gridSize, this);
         add(mazeGrid.getScrollPane(), BorderLayout.CENTER);
 
         ToolbarFactory toolbarFactory = new ToolbarFactory(this, mazeGrid);
@@ -33,8 +32,6 @@ public class MazeEditor extends JFrame {
     public Mode getCurrentMode() { return currentMode; }
     public void setCurrentPlayerId(int id) { this.currentPlayerId = id; }
     public int getCurrentPlayerId() { return currentPlayerId; }
-
-    public JSpinner getGridSizeSpinner() { return gridSizeSpinner; }
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(MazeEditor::new);

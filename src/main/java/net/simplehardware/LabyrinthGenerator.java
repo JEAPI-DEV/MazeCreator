@@ -26,8 +26,7 @@ public class LabyrinthGenerator {
         int n = cells.length;
         // Fill with walls
         for (int y = 0; y < n; y++)
-            for (int x = 0; x < n; x++)
-                cells[x][y].setMode(Mode.WALL, 0);
+            for (CellButton[] cell : cells) cell[y].setMode(Mode.WALL, 0);
 
         boolean[][] visited = new boolean[n][n];
         int startX = (RNG.nextInt(n / 2)) * 2 + 1;
