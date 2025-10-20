@@ -1,14 +1,8 @@
 # Maze Creator
 
-This project is an enhanced maze creator application built in Java. It allows users to create complex, game-ready mazes with forms collection mechanics for the **Maze Runner** multiplayer game system. The editor supports 1-8 players with sophisticated form collection sequences.
+This project is a maze creator application built in Java. It allows users to create, mazes with forms collection mechanics for the Maze Runner game system.
 
 ## Features
-
-### Core Functionality
-- **Visual Maze Editor**: Interactive grid-based editing with click-and-drag support
-- **Multi-Player Support**: 1-8 players with color-coded elements
-- **Dynamic Grid Sizing**: 10x10 to 500x500 maze support
-- **Zoom Controls**: Ctrl+scroll zoom functionality
 
 ### Form Collection System  
 - **Forms A-Z**: Complete alphabet of collectible forms
@@ -16,9 +10,7 @@ This project is an enhanced maze creator application built in Java. It allows us
 - **Player Ownership**: Each form belongs to a specific player (1-8)
 - **Sheet Objects**: Special moveable objects for advanced levels
 
-### Advanced Features
-- **Real-time Validation**: Ensures maze completeness and balance
-- **Template System**: Pre-built maze layouts for quick setup
+### Important
 - **Enhanced Export**: JSON format compatible with Maze Runner game engine
 - **Visual Feedback**: Current mode indicator and player-specific coloring
 
@@ -29,8 +21,6 @@ The project is organized as follows:
 *   **`src/main/java/net/simplehardware/`**: Contains the source code for the application.
 *   **`Examples/`**: Contains example maze configurations.
     *   **`WAM.json`**: Original example maze definition in JSON format.
-    *   **`sample_forms_maze.json`**: Example maze with forms collection mechanics.
-
 ## How to run
 
 ### From IDE
@@ -86,15 +76,6 @@ The enhanced maze format supports:
 
 ## Requirements
 
-- Java 11+
-- Gson library (included: gson-2.13.2.jar)
-- Swing UI framework (built-in)
-
-## Validation Rules
-
-The enhanced validator enforces:
-- Exactly 1 start and 1 finish per player
-- Complete form sequences (no gaps: if C exists, A and B must exist)
-- Balanced player distributions
-- Path reachability from start to finish
-- Form reachability from player positions
+- Java 21+
+- Gson library (used: gson-2.13.2.jar)
+- Swing UI framework
