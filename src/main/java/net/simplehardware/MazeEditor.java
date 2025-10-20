@@ -7,6 +7,7 @@ public class MazeEditor extends JFrame {
 
     private Mode currentMode = Mode.FLOOR;
     private int currentPlayerId = 1;
+    private JLabel modeIndicator;
 
     public MazeEditor() {
         setTitle("Maze Editor");
@@ -23,12 +24,18 @@ public class MazeEditor extends JFrame {
         add(toolbarFactory.createLeftToolbar(), BorderLayout.WEST);
         add(toolbarFactory.createFormsToolbar(), BorderLayout.SOUTH);
 
+        // Add status bar
+        modeIndicator = new JLabel("Current Mode: FLOOR | Player: 1");
+        modeIndicator.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+        add(modeIndicator, BorderLayout.EAST);
+
         setVisible(true);
     }
 
     // Mode and player getters/setters used by CellButton and toolbars
     public void setCurrentMode(Mode mode) {
         this.currentMode = mode;
+        updateModeIndicator();
     }
 
     public Mode getCurrentMode() {
@@ -37,10 +44,18 @@ public class MazeEditor extends JFrame {
 
     public void setCurrentPlayerId(int id) {
         this.currentPlayerId = id;
+        updateModeIndicator();
     }
 
     public int getCurrentPlayerId() {
         return currentPlayerId;
+    }
+
+    private void updateModeIndicator() {
+        String modeText = currentMode.name().replace("_", " ");
+        modeIndicator.setText(
+            "Current Mode: " + modeText + " | Player: " + currentPlayerId
+        );
     }
 
     public static void main(String[] args) {
