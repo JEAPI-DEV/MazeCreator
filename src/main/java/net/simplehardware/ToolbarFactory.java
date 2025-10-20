@@ -90,6 +90,34 @@ public class ToolbarFactory {
             JOptionPane.showMessageDialog(editor, message.toString());
         });
 
+        JButton templatesBtn = new JButton("Templates");
+        templatesBtn.addActionListener(e -> {
+            String[] templateNames = MazeTemplates.getTemplateNames();
+            String selected = (String) JOptionPane.showInputDialog(
+                editor,
+                "Choose a template:",
+                "Maze Templates",
+                JOptionPane.PLAIN_MESSAGE,
+                null,
+                templateNames,
+                templateNames.length > 0 ? templateNames[0] : null
+            );
+
+            if (selected != null) {
+                String[] keys = MazeTemplates.getTemplateKeys();
+                for (int i = 0; i < templateNames.length; i++) {
+                    if (templateNames[i].equals(selected)) {
+                        MazeTemplates.applyTemplate(
+                            keys[i],
+                            grid,
+                            gridSizeSpinner
+                        );
+                        break;
+                    }
+                }
+            }
+        });
+
         panel.add(floorBtn);
         panel.add(wallBtn);
         panel.add(startBtn);
@@ -102,6 +130,7 @@ public class ToolbarFactory {
         panel.add(loadBtn);
         panel.add(saveBtn);
         panel.add(validateBtn);
+        panel.add(templatesBtn);
 
         return panel;
     }
