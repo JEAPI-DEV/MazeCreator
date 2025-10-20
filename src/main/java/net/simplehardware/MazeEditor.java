@@ -2,6 +2,7 @@ package net.simplehardware;
 
 import java.awt.*;
 import javax.swing.*;
+import javax.swing.BorderFactory;
 
 public class MazeEditor extends JFrame {
 
