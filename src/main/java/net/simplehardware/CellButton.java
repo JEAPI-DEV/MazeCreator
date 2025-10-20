@@ -119,7 +119,7 @@ public class CellButton extends JPanel {
             int ty = (getHeight() + fm.getAscent()) / 2 - 4;
             g.drawString(text, tx, ty);
         } else if (mode == Mode.SHEET) {
-            String text = "S";
+            String text = "S" + playerId;
             int tx = (getWidth() - fm.stringWidth(text)) / 2;
             int ty = (getHeight() + fm.getAscent()) / 2 - 4;
             g.drawString(text, tx, ty);
