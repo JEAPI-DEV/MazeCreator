@@ -35,7 +35,7 @@ java -cp "target/classes:gson-2.13.2.jar" net.simplehardware.MazeEditor
 ### Pre-built Release
 Download the Release version and run with:
 ```bash
-java -jar MazeCreator_1.jar
+java -jar MazeCreator_1_1.jar
 ```
 
 ## Usage

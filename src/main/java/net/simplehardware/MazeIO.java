@@ -216,7 +216,7 @@ public class MazeIO {
                     default -> ' ';
                 };
                 if (content == '#' || content == ' ') {
-                    sb.append(content).append('0');
+                    sb.append(content).append(content);
                 } else {
                     sb.append(content).append(c.getPlayerId());
                 }

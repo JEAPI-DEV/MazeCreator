@@ -8,8 +8,6 @@ public class MazeInfoData {
     public String name;
     public List<FormInfo> forms;
     public String maze;
-    public int maxPlayers = 4;
-    public int recommendedLevel = 2;
 }
 
 class FormInfo {
