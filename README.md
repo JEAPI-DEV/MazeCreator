@@ -1,6 +1,6 @@
 # Maze Creator
 
-This project is a simple maze creator application built in Java. It allows users to generate and edit mazes, and potentially solve them (functionality not fully detailed in provided files).
+This project is a maze creator application built in Java. It allows users to generate and edit mazes, and potentially solve them (used to make Maze for FH Maze Game).
 
 ## Project Structure
 
