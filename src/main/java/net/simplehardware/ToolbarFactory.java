@@ -63,6 +63,33 @@ public class ToolbarFactory {
         JButton saveBtn = new JButton("Export JSON");
         saveBtn.addActionListener(e -> MazeIO.exportJson(editor, grid));
 
+        JButton validateBtn = new JButton("Validate");
+        validateBtn.addActionListener(e -> {
+            MazeValidator validator = new MazeValidator();
+            MazeValidator.ValidationResult result = validator.validateMaze(
+                grid
+            );
+
+            StringBuilder message = new StringBuilder();
+            if (result.isValid) {
+                message.append("Maze is valid!\n");
+            } else {
+                message.append("Maze has errors:\n");
+                for (String error : result.errors) {
+                    message.append("- ").append(error).append("\n");
+                }
+            }
+
+            if (!result.warnings.isEmpty()) {
+                message.append("\nWarnings:\n");
+                for (String warning : result.warnings) {
+                    message.append("- ").append(warning).append("\n");
+                }
+            }
+
+            JOptionPane.showMessageDialog(editor, message.toString());
+        });
+
         panel.add(floorBtn);
         panel.add(wallBtn);
         panel.add(startBtn);
@@ -74,6 +101,7 @@ public class ToolbarFactory {
         panel.add(clearBtn);
         panel.add(loadBtn);
         panel.add(saveBtn);
+        panel.add(validateBtn);
 
         return panel;
     }
