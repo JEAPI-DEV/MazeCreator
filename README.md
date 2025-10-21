@@ -2,6 +2,26 @@
 
 This project is a maze creator application built in Java. It allows users to create, mazes with forms collection mechanics for the Maze Runner game system.
 
+![1.png](Images/1.png)
+
+## Generated Map Example
+
+![2.png](Images/2.png)
+
+```json
+{
+  "id": "MazeExample",
+  "name": "MazeExample",
+  "forms": [
+    {
+      "id": "A",
+      "name": "Form A"
+    }
+  ],
+  "maze": "######################/##@3      !1A3    @4##/##  ##############  ##/##        A4##!2##  ##/##########  ##  ##  ##/##A2      !3##      ##/##  ##################/##  ##          ##  ##/##  ##!4######  ##  ##/##    A1##@1      @2##/######################"
+}
+```
+
 ## Features
 
 ### Form Collection System  
@@ -36,7 +56,7 @@ java -cp "target/classes:gson-2.13.2.jar" net.simplehardware.MazeEditor
 ### Pre-built Release
 Download the Release version and run with:
 ```bash
-java -jar MazeCreator_1_1_2.jar
+java -jar MazeCreator_1_1_3.jar
 ```
 
 ## Usage

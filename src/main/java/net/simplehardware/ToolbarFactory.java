@@ -59,8 +59,8 @@ public class ToolbarFactory {
             editor.setCurrentMode(formMode);
         });
 
-        JButton sheetBtn = new JButton("Sheet");
-        sheetBtn.addActionListener(e -> editor.setCurrentMode(Mode.SHEET));
+//        JButton sheetBtn = new JButton("Sheet");
+//        sheetBtn.addActionListener(e -> editor.setCurrentMode(Mode.SHEET));
 
 
         panel.add(floorBtn);
@@ -73,7 +73,7 @@ public class ToolbarFactory {
         panel.add(gridSizeSpinner);
         panel.add(formsLabel);
         panel.add(formsDropdown);
-        panel.add(sheetBtn);
+//        panel.add(sheetBtn);
         return panel;
     }
 
@@ -117,18 +117,7 @@ public class ToolbarFactory {
         JButton genBtn = new JButton("Gen Labyrinth");
         genBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
         genBtn.addActionListener(e -> {
-            boolean ok = LabyrinthGenerator.generateBalancedMaze(grid, 4);
-            if (!ok) {
-                JOptionPane.showMessageDialog(
-                    editor,
-                    "Failed to generate a balanced maze after multiple attempts. Try different grid size."
-                );
-            } else {
-                JOptionPane.showMessageDialog(
-                    editor,
-                    "Generated a balanced maze for 4 players."
-                );
-            }
+            LabyrinthGenerator.generateBalancedMaze(grid, 4);
         });
 
         JTextArea note = new JTextArea(
