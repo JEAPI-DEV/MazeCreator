@@ -1,6 +1,6 @@
 # Maze Creator
 
-This project is a maze creator application built in Java. It allows users to create, mazes with forms collection mechanics for the Maze Runner game system.
+This project is a maze creator application built in Java. It allows users to create, mazes with forms collection mechanics for the Maze Runner game system.m
 
 ![1.png](Images/1.png)
 
@@ -21,6 +21,14 @@ This project is a maze creator application built in Java. It allows users to cre
   "maze": "######################/##@3      !1A3    @4##/##  ##############  ##/##        A4##!2##  ##/##########  ##  ##  ##/##A2      !3##      ##/##  ##################/##  ##          ##  ##/##  ##!4######  ##  ##/##    A1##@1      @2##/######################"
 }
 ```
+
+## Explanation
+
+- pid := Player ID
+- The "@(pid)" indicates Spawns/Starts, the "!(pid)" indicates Finishes for the finish for each player.
+- The forms are collectables that the user has to collect in an order, for example we can have A(pid) 
+   that needs to be collected first after that if it exists we need to collect B(pid) ...
+- There were also Sheets, but I did not figure out at this point what they do.
 
 ## Features
 
