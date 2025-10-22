@@ -39,8 +39,7 @@ This project is a maze creator application built in Java. It allows users to cre
 - **Sheet Objects**: Special moveable objects for advanced levels
 
 ### Important
-- **Enhanced Export**: JSON format compatible with Maze Runner game engine
-- **Visual Feedback**: Current mode indicator and player-specific coloring
+- **Export**: JSON format compatible with Maze Runner game engine
 - **Zoom Function**: You can zoom either with CTRL + Mousewheel or with CTRL +/-
 
 ## Project Structure
@@ -72,8 +71,6 @@ java -jar MazeCreator_1_1_3.jar
 1. **Basic Editing**: Use Floor/Wall buttons for basic maze structure
 2. **Player Setup**: Set Player ID and place Start (@) and Finish (!) positions
 3. **Forms Placement**: Use A-Z form buttons to place collectible forms
-4. **Validation**: Click "Validate" to check maze completeness and balance  
-5. **Templates**: Use "Templates" dropdown for quick maze setup
 6. **Export**: Save as JSON for use with Maze Runner game engine
 
 ## Maze Format
