@@ -205,7 +205,7 @@ public class SymmetricGenerator {
                         if (preferredMoves > 0) {
                             int diff = Math.abs(pathLength - preferredMoves);
                             double clusteringPenalty = (minSegmentDist < 3.0) ? 1000.0 : 0.0;
-                            score = 10000 - (diff * 10) - clusteringPenalty + (minSegmentDist * 0.5);
+                            score = 10000 - (diff * 15) - clusteringPenalty + (minSegmentDist * 0.5);
                         } else {
                             score = pathLength + (minSegmentDist * 10);
                         }
@@ -239,18 +239,12 @@ public class SymmetricGenerator {
         // Q3: x, n-1-y (Bottom-Left)
         // Q4: n-1-x, n-1-y (Bottom-Right)
 
-        switch (quadrant) {
-            case 0:
-                return new int[] { x, y };
-            case 1:
-                return new int[] { n - 1 - x, y };
-            case 2:
-                return new int[] { x, n - 1 - y };
-            case 3:
-                return new int[] { n - 1 - x, n - 1 - y };
-            default:
-                return new int[] { x, y };
-        }
+        return switch (quadrant) {
+            case 1 -> new int[]{n - 1 - x, y};
+            case 2 -> new int[]{x, n - 1 - y};
+            case 3 -> new int[]{n - 1 - x, n - 1 - y};
+            default -> new int[]{x, y};
+        };
     }
 
     private static void permute(List<int[]> arr, int k, List<List<int[]>> result) {

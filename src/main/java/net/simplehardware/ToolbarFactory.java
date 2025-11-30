@@ -167,16 +167,51 @@ public class ToolbarFactory {
             LabyrinthGenerator.generateMaze(grid);
         });
 
-        SVGButton genSymBtn = new SVGButton("Gen Symmetric", "/images/generate_Icon.svg");
+        SVGButton genSymBtn = GenerateFullSymmetricMaze();
+
+        // --- Settings Button (Bottom Left) ---
+        SVGButton settingsBtn = new SVGButton("Settings", "/images/settings_Icon.svg");
+        settingsBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
+        settingsBtn.addActionListener(e -> new SettingsDialog(editor, manager).show());
+
+        panel.add(clearBtn);
+        panel.add(Box.createVerticalStrut(8));
+        panel.add(loadBtn);
+        panel.add(Box.createVerticalStrut(8));
+        panel.add(saveBtn);
+        panel.add(Box.createVerticalStrut(8));
+        panel.add(calcMinMovesBtn);
+        panel.add(Box.createVerticalStrut(8));
+        panel.add(topWall);
+        panel.add(Box.createVerticalStrut(8));
+        panel.add(genBtn);
+        panel.add(Box.createVerticalStrut(8));
+        panel.add(genSymBtn);
+        panel.add(Box.createVerticalStrut(8));
+        panel.add(genOLD);
+        panel.add(Box.createVerticalStrut(12));
+
+        panel.add(Box.createVerticalGlue());
+        panel.add(settingsBtn);
+
+        Dimension min = panel.getMinimumSize();
+        panel.setMaximumSize(new Dimension(min.width, Integer.MAX_VALUE));
+        panel.setMinimumSize(min);
+        panel.setPreferredSize(min);
+        return panel;
+    }
+
+    private SVGButton GenerateFullSymmetricMaze() {
+        SVGButton genSymBtn = new SVGButton("Gen Symmetric", "/images/symmetric_ICO.svg");
         genSymBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
         genSymBtn.addActionListener(e -> {
             if (confirmOverwriteIfNotEmpty("generate symmetric labyrinth"))
                 return;
 
-            // Ask for number of forms
-            String input = JOptionPane.showInputDialog(editor, "Enter number of forms per player (1-3):", "1");
+            String input = JOptionPane.showInputDialog(editor, "Enter num of forms (1-15):", "1");
+
             if (input == null)
-                return; // User cancelled
+                return;
 
             int numForms = 1;
             try {
@@ -187,7 +222,6 @@ public class ToolbarFactory {
                     numForms = 15;
             } catch (NumberFormatException ignored) {}
 
-            // Ask for preferred move count
             String movesInput = JOptionPane.showInputDialog(editor, "Enter preferred move count (0 for max distance):",
                     "0");
             int preferredMoves = 0;
@@ -220,12 +254,9 @@ public class ToolbarFactory {
                 int diff = maxMoves - minMoves;
 
                 // Relaxed matching: +/- 10%
-                // We check if the difference is within 10% of the minimum moves
                 double allowedDiff = minMoves * 0.10;
 
-                if (diff == 0)
-                    msg.append("Perfectly Matched!");
-                else if (diff <= allowedDiff)
+                if (diff <= allowedDiff)
                     msg.append("Evenly Matched (Max Diff: ").append(diff).append(", Allowed: ")
                             .append((int) allowedDiff).append(")");
                 else
@@ -238,37 +269,7 @@ public class ToolbarFactory {
             JOptionPane.showMessageDialog(editor, msg.toString(), "Symmetric Generation Result",
                     JOptionPane.INFORMATION_MESSAGE);
         });
-
-        // --- Settings Button (Bottom Left) ---
-        SVGButton settingsBtn = new SVGButton("Settings", "/images/settings_Icon.svg");
-        settingsBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
-        settingsBtn.addActionListener(e -> new SettingsDialog(editor, manager).show());
-
-        panel.add(clearBtn);
-        panel.add(Box.createVerticalStrut(8));
-        panel.add(loadBtn);
-        panel.add(Box.createVerticalStrut(8));
-        panel.add(saveBtn);
-        panel.add(Box.createVerticalStrut(8));
-        panel.add(calcMinMovesBtn);
-        panel.add(Box.createVerticalStrut(8));
-        panel.add(topWall);
-        panel.add(Box.createVerticalStrut(8));
-        panel.add(genBtn);
-        panel.add(Box.createVerticalStrut(8));
-        panel.add(genSymBtn);
-        panel.add(Box.createVerticalStrut(8));
-        panel.add(genOLD);
-        panel.add(Box.createVerticalStrut(12));
-
-        panel.add(Box.createVerticalGlue());
-        panel.add(settingsBtn);
-
-        Dimension min = panel.getMinimumSize();
-        panel.setMaximumSize(new Dimension(min.width, Integer.MAX_VALUE));
-        panel.setMinimumSize(min);
-        panel.setPreferredSize(min);
-        return panel;
+        return genSymBtn;
     }
 
     private SVGButton generateWalls() {
