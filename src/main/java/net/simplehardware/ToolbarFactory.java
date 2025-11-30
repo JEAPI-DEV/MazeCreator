@@ -4,6 +4,7 @@ import net.simplehardware.dialogs.ConfirmationDialog;
 import net.simplehardware.dialogs.PathfindingResultDialog;
 import net.simplehardware.dialogs.SettingsDialog;
 import net.simplehardware.generators.LabyrinthGenerator;
+import net.simplehardware.generators.SymmetricGenerator;
 import net.simplehardware.generators.LabyrinthGeneratorOLD;
 import net.simplehardware.models.CellButton;
 import net.simplehardware.models.Mode;
@@ -67,16 +68,12 @@ public class ToolbarFactory {
 
         JLabel playerLabel = new JLabel("Player ID:");
         JSpinner playerSpinner = new JSpinner(
-            new SpinnerNumberModel(1, 1, 4, 1)
-        );
-        playerSpinner.addChangeListener(e ->
-            editor.setCurrentPlayerId((int) playerSpinner.getValue())
-        );
+                new SpinnerNumberModel(1, 1, 4, 1));
+        playerSpinner.addChangeListener(e -> editor.setCurrentPlayerId((int) playerSpinner.getValue()));
 
         JLabel gridSizeLabel = new JLabel("Grid Size:");
         gridSizeSpinner = new JSpinner(
-            new SpinnerNumberModel(grid.getGridSize(), 10, 500, 1)
-        );
+                new SpinnerNumberModel(grid.getGridSize(), 10, 500, 1));
         gridSizeSpinner.addChangeListener(e -> {
             int newSize = (int) gridSizeSpinner.getValue();
             grid.resizeGrid(newSize);
@@ -121,7 +118,8 @@ public class ToolbarFactory {
         SVGButton clearBtn = new SVGButton("Clear", "/images/clearAll_Icon.svg");
         clearBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
         clearBtn.addActionListener(e -> {
-            if (confirmOverwriteIfNotEmpty("clear the grid")) return;
+            if (confirmOverwriteIfNotEmpty("clear the grid"))
+                return;
 
             for (CellButton[] row : grid.getCells()) {
                 for (CellButton cell : row) {
@@ -130,13 +128,10 @@ public class ToolbarFactory {
             }
         });
 
-
         // Load Button - Blue Material Design with SVG Icon
         SVGButton loadBtn = new SVGButton("Load", "/images/load_Icon.svg");
         loadBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
-        loadBtn.addActionListener(e ->
-                MazeIO.loadFromJson(editor, grid, gridSizeSpinner)
-        );
+        loadBtn.addActionListener(e -> MazeIO.loadFromJson(editor, grid, gridSizeSpinner));
 
         // Save Button - Green Material Design with SVG Icon
         SVGButton saveBtn = new SVGButton("Save", "/images/save_Icon.svg");
@@ -159,22 +154,95 @@ public class ToolbarFactory {
         SVGButton genOLD = new SVGButton("Generate old", "/images/generate2_Icon.svg");
         genOLD.setAlignmentX(Component.CENTER_ALIGNMENT);
         genOLD.addActionListener(e -> {
-            if (confirmOverwriteIfNotEmpty("generate labyrinth")) return;
+            if (confirmOverwriteIfNotEmpty("generate labyrinth"))
+                return;
             LabyrinthGeneratorOLD.generateMaze(grid);
         });
 
         SVGButton genBtn = new SVGButton("Generate new", "/images/generate_Icon.svg");
         genBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
         genBtn.addActionListener(e -> {
-            if (confirmOverwriteIfNotEmpty("generate labyrinth")) return;
+            if (confirmOverwriteIfNotEmpty("generate labyrinth"))
+                return;
             LabyrinthGenerator.generateMaze(grid);
+        });
+
+        SVGButton genSymBtn = new SVGButton("Gen Symmetric", "/images/generate_Icon.svg");
+        genSymBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
+        genSymBtn.addActionListener(e -> {
+            if (confirmOverwriteIfNotEmpty("generate symmetric labyrinth"))
+                return;
+
+            // Ask for number of forms
+            String input = JOptionPane.showInputDialog(editor, "Enter number of forms per player (1-3):", "1");
+            if (input == null)
+                return; // User cancelled
+
+            int numForms = 1;
+            try {
+                numForms = Integer.parseInt(input);
+                if (numForms < 1)
+                    numForms = 1;
+                if (numForms > 15)
+                    numForms = 15;
+            } catch (NumberFormatException ignored) {}
+
+            // Ask for preferred move count
+            String movesInput = JOptionPane.showInputDialog(editor, "Enter preferred move count (0 for max distance):",
+                    "0");
+            int preferredMoves = 0;
+            if (movesInput != null) {
+                try {
+                    preferredMoves = Integer.parseInt(movesInput);
+                    if (preferredMoves < 0)
+                        preferredMoves = 0;
+                } catch (NumberFormatException ignored) {
+                }
+            }
+
+            SymmetricGenerator.generate(grid, numForms, preferredMoves);
+
+            // Calculate min moves for P1, P2, P3, P4
+            int movesP1 = Pathfinder.calculateMinimumMoves(grid.getCells(), 1);
+            int movesP2 = Pathfinder.calculateMinimumMoves(grid.getCells(), 2);
+            int movesP3 = Pathfinder.calculateMinimumMoves(grid.getCells(), 3);
+            int movesP4 = Pathfinder.calculateMinimumMoves(grid.getCells(), 4);
+
+            StringBuilder msg = new StringBuilder("Generation Complete!\n\n");
+            msg.append("Player 1 Min Moves: ").append(movesP1 == -1 ? "Impossible" : movesP1).append("\n");
+            msg.append("Player 2 Min Moves: ").append(movesP2 == -1 ? "Impossible" : movesP2).append("\n");
+            msg.append("Player 3 Min Moves: ").append(movesP3 == -1 ? "Impossible" : movesP3).append("\n");
+            msg.append("Player 4 Min Moves: ").append(movesP4 == -1 ? "Impossible" : movesP4).append("\n\n");
+
+            if (movesP1 != -1 && movesP2 != -1 && movesP3 != -1 && movesP4 != -1) {
+                int maxMoves = Math.max(Math.max(movesP1, movesP2), Math.max(movesP3, movesP4));
+                int minMoves = Math.min(Math.min(movesP1, movesP2), Math.min(movesP3, movesP4));
+                int diff = maxMoves - minMoves;
+
+                // Relaxed matching: +/- 10%
+                // We check if the difference is within 10% of the minimum moves
+                double allowedDiff = minMoves * 0.10;
+
+                if (diff == 0)
+                    msg.append("Perfectly Matched!");
+                else if (diff <= allowedDiff)
+                    msg.append("Evenly Matched (Max Diff: ").append(diff).append(", Allowed: ")
+                            .append((int) allowedDiff).append(")");
+                else
+                    msg.append("Not Matched (Max Diff: ").append(diff).append(", Allowed: ").append((int) allowedDiff)
+                            .append(")");
+            } else {
+                msg.append("Cannot compare (path missing for some players)");
+            }
+
+            JOptionPane.showMessageDialog(editor, msg.toString(), "Symmetric Generation Result",
+                    JOptionPane.INFORMATION_MESSAGE);
         });
 
         // --- Settings Button (Bottom Left) ---
         SVGButton settingsBtn = new SVGButton("Settings", "/images/settings_Icon.svg");
         settingsBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
         settingsBtn.addActionListener(e -> new SettingsDialog(editor, manager).show());
-
 
         panel.add(clearBtn);
         panel.add(Box.createVerticalStrut(8));
@@ -187,6 +255,8 @@ public class ToolbarFactory {
         panel.add(topWall);
         panel.add(Box.createVerticalStrut(8));
         panel.add(genBtn);
+        panel.add(Box.createVerticalStrut(8));
+        panel.add(genSymBtn);
         panel.add(Box.createVerticalStrut(8));
         panel.add(genOLD);
         panel.add(Box.createVerticalStrut(12));
@@ -240,8 +310,5 @@ public class ToolbarFactory {
         }
         return false;
     }
-
-
-
 
 }
