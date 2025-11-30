@@ -5,231 +5,327 @@ import net.simplehardware.models.CellButton;
 import net.simplehardware.models.Mode;
 
 import net.simplehardware.utils.Pathfinder;
-
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.*;
+
+import java.util.function.Consumer;
 
 public class SymmetricGenerator {
 
     private static final Random RNG = new Random();
 
-    public static void generate(MazeGrid grid, int numForms, int preferredMoves) {
+    private record CellState(Mode mode, int playerId) {
+    }
+
+    public static void generate(MazeGrid grid, int numForms, int preferredMoves, Consumer<Integer> progressCallback) {
         int n = grid.getGridSize();
         CellButton[][] cells = grid.getCells();
+        CellState[][] bestLayoutState = null;
+        double bestOverallScore = -Double.MAX_VALUE;
 
-        // 1. Initialize with Walls
-        for (int x = 0; x < n; x++) {
-            for (int y = 0; y < n; y++) {
-                cells[x][y].setMode(Mode.WALL, 0);
-            }
-        }
+        int maxAttempts = 100;
 
-        // 2. Create Rooms (4-Way Symmetric)
-        // We only generate in the top-left quadrant and mirror to others
-        int halfN = n / 2;
-        int numRooms = (halfN * halfN) / 50; // Adjust density
-        if (numRooms < 1)
-            numRooms = 1;
+        for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+            System.out.println("--- Attempt " + attempt + "/" + maxAttempts + " ---");
+            System.out.flush();
 
-        for (int i = 0; i < numRooms; i++) {
-            int w = RNG.nextInt(3) + 3; // Width 3-5
-            int h = RNG.nextInt(3) + 3; // Height 3-5
-
-            // Ensure bounds are positive and fit in top-left quadrant
-            // x range: 1 to halfN - w - 1
-            // y range: 1 to halfN - h - 1
-
-            int xBound = halfN - w - 1;
-            int yBound = halfN - h - 1;
-
-            if (xBound > 0 && yBound > 0) {
-                int x = RNG.nextInt(xBound) + 1;
-                int y = RNG.nextInt(yBound) + 1;
-                createRoom4Way(cells, x, y, w, h);
-            }
-        }
-
-        // 3. Maze Generation (4-Way Symmetric DFS)
-        boolean[][] visited = new boolean[n][n];
-
-        // Start DFS from (1, 1) which is in top-left
-        generateSymmetric4Way(cells, visited, 1, 1, n);
-
-        // 4. Ensure Connectivity (Center Connection)
-        // Connect the quadrants in the center
-        int centerX = n / 2;
-        int centerY = n / 2;
-
-        // Horizontal center connection
-        for (int x = centerX - 2; x <= centerX + 2; x++) {
-            if (x > 0 && x < n - 1) {
-                cells[x][centerY].setMode(Mode.FLOOR, 0);
-                if (n % 2 == 0)
-                    cells[x][centerY - 1].setMode(Mode.FLOOR, 0); // Wider corridor for even grids
-            }
-        }
-        // Vertical center connection
-        for (int y = centerY - 2; y <= centerY + 2; y++) {
-            if (y > 0 && y < n - 1) {
-                cells[centerX][y].setMode(Mode.FLOOR, 0);
-                if (n % 2 == 0)
-                    cells[centerX - 1][y].setMode(Mode.FLOOR, 0);
-            }
-        }
-
-        // 5. Place Objectives (4 Players) - Optimized Placement
-        List<int[]> floorCells = new ArrayList<>();
-        int limitX = n / 2;
-        int limitY = n / 2;
-
-        for (int x = 1; x < limitX; x++) {
-            for (int y = 1; y < limitY; y++) {
-                if (cells[x][y].getMode() == Mode.FLOOR) {
-                    floorCells.add(new int[] { x, y });
+            // 1. Initialize with Walls
+            System.out.println("Step 1: Initializing Walls");
+            System.out.flush();
+            for (int x = 0; x < n; x++) {
+                for (int y = 0; y < n; y++) {
+                    cells[x][y].setMode(Mode.WALL, 0);
                 }
             }
-        }
 
-        if (floorCells.size() >= 10) { // Need enough cells for banding
-            // Sort by Y then X to create vertical bands
-            floorCells.sort((a, b) -> {
-                if (a[1] != b[1])
-                    return Integer.compare(a[1], b[1]);
-                return Integer.compare(a[0], b[0]);
-            });
+            // 2. Create Rooms (4-Way Symmetric)
+            System.out.println("Step 2: Creating Rooms");
+            System.out.flush();
+            int halfN = n / 2;
+            int numRooms = (halfN * halfN) / 50;
+            if (numRooms < 1)
+                numRooms = 1;
 
-            int size = floorCells.size();
-            int bandSize = size / 3;
+            for (int i = 0; i < numRooms; i++) {
+                int w = RNG.nextInt(3) + 3;
+                int h = RNG.nextInt(3) + 3;
+                int xBound = halfN - w - 1;
+                int yBound = halfN - h - 1;
+                if (xBound > 0 && yBound > 0) {
+                    int x = RNG.nextInt(xBound) + 1;
+                    int y = RNG.nextInt(yBound) + 1;
+                    createRoom4Way(cells, x, y, w, h);
+                }
+            }
 
-            // Define pools
-            List<int[]> startPool = floorCells.subList(0, bandSize); // Top
-            List<int[]> formPool = floorCells.subList(bandSize, size - bandSize); // Middle
-            List<int[]> finishPool = floorCells.subList(size - bandSize, size); // Bottom
+            // 3. Maze Generation
+            System.out.println("Step 3: DFS Generation");
+            System.out.flush();
+            boolean[][] visited = new boolean[n][n];
+            generateSymmetric4Way(cells, visited, 1, 1, n);
 
-            // Optimization Loop
-            List<int[]> bestPlacement = null; // List of {x, y, modeOrdinal} (absolute coords)
-            double bestScore = -Double.MAX_VALUE;
+            // 4. Ensure Connectivity
+            System.out.println("Step 4: Ensuring Connectivity");
+            System.out.flush();
+            int centerX = n / 2;
+            int centerY = n / 2;
+            for (int x = centerX - 2; x <= centerX + 2; x++) {
+                if (x > 0 && x < n - 1) {
+                    cells[x][centerY].setMode(Mode.FLOOR, 0);
+                    if (n % 2 == 0)
+                        cells[x][centerY - 1].setMode(Mode.FLOOR, 0);
+                }
+            }
+            for (int y = centerY - 2; y <= centerY + 2; y++) {
+                if (y > 0 && y < n - 1) {
+                    cells[centerX][y].setMode(Mode.FLOOR, 0);
+                    if (n % 2 == 0)
+                        cells[centerX - 1][y].setMode(Mode.FLOOR, 0);
+                }
+            }
 
-            // Reduce iterations because we have inner loops for quadrants
-            int iterations = 100;
+            // 5. Place Objectives
+            System.out.println("Step 5: Collecting Floor Cells");
+            System.out.flush();
+            List<int[]> floorCells = new ArrayList<>();
+            int limitX = n / 2;
+            int limitY = n / 2;
 
-            int numPoints = 2 + numForms;
-
-            for (int i = 0; i < iterations; i++) {
-                // Pick candidates from respective pools (Q1 coordinates)
-                List<int[]> q1Points = new ArrayList<>();
-
-                if (numPoints == 3) {
-                    q1Points.add(startPool.get(RNG.nextInt(startPool.size())));
-                    q1Points.add(formPool.get(RNG.nextInt(formPool.size())));
-                    q1Points.add(finishPool.get(RNG.nextInt(finishPool.size())));
-                } else {
-                    Set<Integer> indices = new HashSet<>();
-                    while (indices.size() < numPoints) {
-                        indices.add(RNG.nextInt(floorCells.size()));
-                    }
-                    for (int idx : indices) {
-                        q1Points.add(floorCells.get(idx));
+            for (int x = 1; x < limitX; x++) {
+                for (int y = 1; y < limitY; y++) {
+                    if (cells[x][y].getMode() == Mode.FLOOR) {
+                        floorCells.add(new int[] { x, y });
                     }
                 }
+            }
 
-                // Try all permutations of roles
-                List<List<int[]>> allPermutations = new ArrayList<>();
-                permute(q1Points, 0, allPermutations);
+            System.out.println("Floor cells found: " + floorCells.size());
+            System.out.flush();
 
-                for (List<int[]> roles : allPermutations) {
-                    // roles[0] = Start, roles[1..N] = Forms, roles[Last] = Finish
+            if (floorCells.size() >= 10) {
+                floorCells.sort((a, b) -> {
+                    if (a[1] != b[1])
+                        return Integer.compare(a[1], b[1]);
+                    return Integer.compare(a[0], b[0]);
+                });
 
-                    // Try Quadrant Assignments
-                    // Start is always Q1 (0)
-                    // Forms and Finish can be Q1, Q2, Q3, Q4 (0-3)
+                int size = floorCells.size();
+                int bandSize = size / 3;
+                List<int[]> startPool = floorCells.subList(0, bandSize);
+                List<int[]> formPool = floorCells.subList(bandSize, size - bandSize);
+                List<int[]> finishPool = floorCells.subList(size - bandSize, size);
 
-                    // To keep complexity down, we'll just try a few random quadrant assignments per
-                    // permutation
-                    // instead of all 4^(N-1). Or maybe just 16 random assignments.
+                int numPoints = 2 + numForms;
+                // Restore normal settings
+                int totalIterations = 1000;
+                AtomicInteger progressCounter = new AtomicInteger(
+                        0);
+                final int currentAttempt = attempt;
 
-                    for (int qAttempt = 0; qAttempt < 20; qAttempt++) {
-                        List<int[]> currentConfig = new ArrayList<>();
+                final Object updateLock = new Object();
+                final double[] bestScoreVal = { -Double.MAX_VALUE };
+                final java.util.concurrent.atomic.AtomicReference<List<int[]>> bestPlacementRef = new java.util.concurrent.atomic.AtomicReference<>(
+                        new ArrayList<>());
 
-                        // Assign Start (Always Q1)
-                        int[] startQ1 = roles.get(0);
-                        int[] startAbs = getPointInQuadrant(startQ1[0], startQ1[1], 0, n); // Q1
-                        currentConfig.add(new int[] { startAbs[0], startAbs[1], Mode.START.ordinal() });
+                System.out.println("Step 6: Starting Parallel Optimization (" + totalIterations + " iterations)");
+                System.out.flush();
 
-                        // Assign Forms
-                        for (int j = 0; j < numForms; j++) {
-                            int[] formQ1 = roles.get(1 + j);
-                            // Random quadrant 0-3
-                            int q = RNG.nextInt(4);
-                            int[] formAbs = getPointInQuadrant(formQ1[0], formQ1[1], q, n);
-                            char formChar = (char) ('A' + j);
-                            Mode m = Mode.valueOf("FORM_" + formChar);
-                            currentConfig.add(new int[] { formAbs[0], formAbs[1], m.ordinal() });
-                        }
+                int cores = Runtime.getRuntime().availableProcessors();
+                java.util.concurrent.ExecutorService executor = java.util.concurrent.Executors
+                        .newFixedThreadPool(cores);
+                System.out.println("Step 6: ExecutorService created with " + cores + " threads");
+                System.out.flush();
 
-                        // Assign Finish
-                        int[] finishQ1 = roles.get(roles.size() - 1);
-                        // Random quadrant 0-3
-                        int q = RNG.nextInt(4);
-                        int[] finishAbs = getPointInQuadrant(finishQ1[0], finishQ1[1], q, n);
-                        currentConfig.add(new int[] { finishAbs[0], finishAbs[1], Mode.FINISH.ordinal() });
+                for (int i = 0; i < totalIterations; i++) {
+                    final int iterationIndex = i;
+                    executor.submit(() -> {
+                        try {
+                            java.util.concurrent.ThreadLocalRandom random = java.util.concurrent.ThreadLocalRandom
+                                    .current();
+                            List<int[]> q1Points = new ArrayList<>();
 
-                        // Calculate Path
-                        int pathLength = 0;
-                        boolean validPath = true;
-                        double minSegmentDist = Double.MAX_VALUE;
-
-                        for (int j = 0; j < currentConfig.size() - 1; j++) {
-                            int[] p1 = currentConfig.get(j);
-                            int[] p2 = currentConfig.get(j + 1);
-
-                            int dist = Pathfinder.findShortestPath(cells,
-                                    new Pathfinder.Point(p1[0], p1[1]),
-                                    new Pathfinder.Point(p2[0], p2[1]));
-
-                            if (dist == -1) {
-                                validPath = false;
-                                break;
+                            if (numPoints == 3) {
+                                q1Points.add(startPool.get(random.nextInt(startPool.size())));
+                                q1Points.add(formPool.get(random.nextInt(formPool.size())));
+                                q1Points.add(finishPool.get(random.nextInt(finishPool.size())));
+                            } else {
+                                Set<Integer> indices = new HashSet<>();
+                                while (indices.size() < numPoints) {
+                                    indices.add(random.nextInt(floorCells.size()));
+                                }
+                                for (int idx : indices) {
+                                    q1Points.add(floorCells.get(idx));
+                                }
                             }
-                            pathLength += dist;
 
-                            double segmentDist = Math.abs(p1[0] - p2[0]) + Math.abs(p1[1] - p2[1]);
-                            if (segmentDist < minSegmentDist)
-                                minSegmentDist = segmentDist;
+                            Collections.shuffle(q1Points, random);
+                            List<int[]> currentConfig = new ArrayList<>();
+
+                            int[] startQ1 = q1Points.get(0);
+                            int[] startAbs = getPointInQuadrant(startQ1[0], startQ1[1], 0, n);
+                            currentConfig.add(new int[] { startAbs[0], startAbs[1], Mode.START.ordinal() });
+
+                            for (int j = 0; j < numForms; j++) {
+                                int[] formQ1 = q1Points.get(1 + j);
+                                int q = random.nextInt(4);
+                                int[] formAbs = getPointInQuadrant(formQ1[0], formQ1[1], q, n);
+                                char formChar = (char) ('A' + j);
+                                Mode m = Mode.valueOf("FORM_" + formChar);
+                                currentConfig.add(new int[] { formAbs[0], formAbs[1], m.ordinal() });
+                            }
+
+                            int[] finishQ1 = q1Points.get(q1Points.size() - 1);
+                            int q = random.nextInt(4);
+                            int[] finishAbs = getPointInQuadrant(finishQ1[0], finishQ1[1], q, n);
+                            currentConfig.add(new int[] { finishAbs[0], finishAbs[1], Mode.FINISH.ordinal() });
+
+                            int pathLength = 0;
+                            boolean validPath = true;
+                            double minSegmentDist = Double.MAX_VALUE;
+
+                            for (int j = 0; j < currentConfig.size() - 1; j++) {
+                                int[] p1 = currentConfig.get(j);
+                                int[] p2 = currentConfig.get(j + 1);
+                                int dist = Pathfinder.findShortestPath(cells, new Pathfinder.Point(p1[0], p1[1]),
+                                        new Pathfinder.Point(p2[0], p2[1]));
+                                if (dist == -1) {
+                                    validPath = false;
+                                    break;
+                                }
+                                pathLength += dist;
+                                double segmentDist = Math.abs(p1[0] - p2[0]) + Math.abs(p1[1] - p2[1]);
+                                if (segmentDist < minSegmentDist)
+                                    minSegmentDist = segmentDist;
+                            }
+
+                            if (validPath) {
+                                double score;
+                                if (preferredMoves > 0) {
+                                    int diff = Math.abs(pathLength - preferredMoves);
+                                    double clusteringPenalty = (minSegmentDist < 3.0) ? 1000.0 : 0.0;
+                                    score = 10000 - (diff * 25) - clusteringPenalty + (minSegmentDist * 0.5);
+                                } else {
+                                    score = pathLength + (minSegmentDist * 10);
+                                }
+
+                                synchronized (updateLock) {
+                                    if (score > bestScoreVal[0]) {
+                                        bestScoreVal[0] = score;
+                                        bestPlacementRef.set(new ArrayList<>(currentConfig));
+                                    }
+                                }
+                            }
+
+                            int p = progressCounter.incrementAndGet();
+                            if (p % 100 == 0 && progressCallback != null) {
+                                int globalStep = (currentAttempt - 1) * totalIterations + p;
+                                int totalSteps = maxAttempts * totalIterations;
+                                int percent = (int) ((globalStep / (double) totalSteps) * 100);
+                                progressCallback.accept(percent);
+                            }
+                        } catch (Throwable e) {
+                            System.err.println("CRITICAL ERROR IN TASK " + iterationIndex);
+                            e.printStackTrace();
                         }
+                    });
+                }
 
-                        if (!validPath)
-                            continue;
+                executor.shutdown();
+                try {
+                    // Wait for all tasks to finish
+                    if (!executor.awaitTermination(60, java.util.concurrent.TimeUnit.SECONDS)) {
+                        System.err.println("Executor timed out!");
+                        executor.shutdownNow();
+                    }
+                } catch (InterruptedException e) {
+                    executor.shutdownNow();
+                    Thread.currentThread().interrupt();
+                }
 
-                        // Score
-                        double score;
-                        if (preferredMoves > 0) {
-                            int diff = Math.abs(pathLength - preferredMoves);
-                            double clusteringPenalty = (minSegmentDist < 3.0) ? 1000.0 : 0.0;
-                            score = 10000 - (diff * 15) - clusteringPenalty + (minSegmentDist * 0.5);
-                        } else {
-                            score = pathLength + (minSegmentDist * 10);
+                List<int[]> bestPlacement = bestPlacementRef.get();
+                Double bestAttemptScoreVal = bestScoreVal[0];
+                double bestAttemptScore = (bestAttemptScoreVal == null) ? -Double.MAX_VALUE : bestAttemptScoreVal;
+
+                System.out.println("Attempt " + attempt + " Best Score: " + bestAttemptScore);
+                System.out.flush();
+
+                if (bestPlacement != null) {
+                    // Apply placement to current grid to save it temporarily for this attempt
+                    // First, clear any previous objectives from this attempt
+                    for (int x = 0; x < n; x++) {
+                        for (int y = 0; y < n; y++) {
+                            Mode m = cells[x][y].getMode();
+                            if (m == Mode.START || m == Mode.FINISH || m.toString().startsWith("FORM_")) {
+                                cells[x][y].setMode(Mode.FLOOR, 0);
+                            }
                         }
+                    }
 
-                        if (score > bestScore) {
-                            bestScore = score;
-                            bestPlacement = new ArrayList<>(currentConfig);
+                    for (int[] item : bestPlacement) {
+                        Mode m = Mode.values()[item[2]];
+                        placeObjectivesSymmetric(cells, item[0], item[1], m, n);
+                    }
+
+                    // Check if this is the best overall
+                    if (bestAttemptScore > bestOverallScore) {
+                        bestOverallScore = bestAttemptScore;
+                        // Save this layout (Mode and Player ID)
+                        bestLayoutState = new CellState[n][n];
+                        for (int xx = 0; xx < n; xx++) {
+                            for (int yy = 0; yy < n; yy++) {
+                                bestLayoutState[xx][yy] = new CellState(cells[xx][yy].getMode(),
+                                        cells[xx][yy].getPlayerId());
+                            }
+                        }
+                    }
+
+                    // Early exit if good enough (e.g. score > 9000 means diff is small)
+                    // Score = 10000 - diff*10 ...
+                    // If diff is 0, score is 10000 + ...
+                    // If diff is 10% of 200 = 20, penalty is 200. Score ~ 9800.
+                    if (bestAttemptScore > 9500) {
+                        System.out.println("Found excellent match! Stopping early.");
+                        break;
+                    }
+                }
+
+            } else {
+                // Fallback placement for this attempt
+                fallbackPlacement(cells, n, halfN);
+                // If this is the first valid layout or better than previous, save it
+                // For fallback, we don't have a score, so we just take the first one if no
+                // other valid maze was found.
+                if (bestLayoutState == null) {
+                    bestLayoutState = new CellState[n][n];
+                    for (int xx = 0; xx < n; xx++) {
+                        for (int yy = 0; yy < n; yy++) {
+                            bestLayoutState[xx][yy] = new CellState(cells[xx][yy].getMode(),
+                                    cells[xx][yy].getPlayerId());
                         }
                     }
                 }
             }
-
-            if (bestPlacement != null) {
-                for (int[] item : bestPlacement) {
-                    Mode m = Mode.values()[item[2]];
-                    placeObjectivesSymmetric(cells, item[0], item[1], m, n);
-                }
-            } else {
-                fallbackPlacement(cells, n, halfN);
-            }
-
-        } else {
-            fallbackPlacement(cells, n, halfN);
         }
+
+        // Restore best layout found across all attempts
+        if (bestLayoutState != null) {
+            for (int x = 0; x < n; x++) {
+                for (int y = 0; y < n; y++) {
+                    CellState state = bestLayoutState[x][y];
+                    cells[x][y].setMode(state.mode(), state.playerId());
+                }
+            }
+        } else {
+            // If no valid layout was ever found (e.g., grid too small, floorCells.size() <
+            // 10 always)
+            // Re-run fallback one last time on the current (potentially empty) grid
+            System.err
+                    .println("Warning: No valid maze layout found after " + maxAttempts + " attempts. Using fallback.");
+            fallbackPlacement(cells, n, n / 2);
+        }
+
+        if (progressCallback != null)
+            progressCallback.accept(100); // Ensure 100% at end
     }
 
     private static int[] getPointInQuadrant(int x, int y, int quadrant, int n) {
@@ -240,10 +336,10 @@ public class SymmetricGenerator {
         // Q4: n-1-x, n-1-y (Bottom-Right)
 
         return switch (quadrant) {
-            case 1 -> new int[]{n - 1 - x, y};
-            case 2 -> new int[]{x, n - 1 - y};
-            case 3 -> new int[]{n - 1 - x, n - 1 - y};
-            default -> new int[]{x, y};
+            case 1 -> new int[] { n - 1 - x, y };
+            case 2 -> new int[] { x, n - 1 - y };
+            case 3 -> new int[] { n - 1 - x, n - 1 - y };
+            default -> new int[] { x, y };
         };
     }
 

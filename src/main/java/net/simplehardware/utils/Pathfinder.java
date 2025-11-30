@@ -28,8 +28,10 @@ public class Pathfinder {
 
         @Override
         public boolean equals(Object obj) {
-            if (this == obj) return true;
-            if (!(obj instanceof Point)) return false;
+            if (this == obj)
+                return true;
+            if (!(obj instanceof Point))
+                return false;
             Point other = (Point) obj;
             return x == other.x && y == other.y;
         }
@@ -47,9 +49,42 @@ public class Pathfinder {
 
     /**
      * Finds the shortest path distance between two points in the maze
-     * @param grid The maze grid
+     * 
+     * @param grid  The maze grid
      * @param start Starting coordinates
-     * @param end Ending coordinates
+     * @param end   Ending coordinates
+     * @return Minimum number of moves, or -1 if no path exists
+     */
+    /**
+     * Node class for A* algorithm
+     */
+    private static class Node implements Comparable<Node> {
+        int x, y;
+        int g; // Cost from start
+        int h; // Heuristic to end
+        int f; // Total cost (g + h)
+
+        public Node(int x, int y, int g, int h) {
+            this.x = x;
+            this.y = y;
+            this.g = g;
+            this.h = h;
+            this.f = g + h;
+        }
+
+        @Override
+        public int compareTo(Node other) {
+            return Integer.compare(this.f, other.f);
+        }
+    }
+
+    /**
+     * Finds the shortest path distance between two points in the maze using A*
+     * algorithm
+     * 
+     * @param grid  The maze grid
+     * @param start Starting coordinates
+     * @param end   Ending coordinates
      * @return Minimum number of moves, or -1 if no path exists
      */
     public static int findShortestPath(CellButton[][] grid, Point start, Point end) {
@@ -58,46 +93,53 @@ public class Pathfinder {
         }
 
         int n = grid.length;
-        boolean[][] visited = new boolean[n][n];
-        Queue<Point> queue = new LinkedList<>();
-        Queue<Integer> distanceQueue = new LinkedList<>();
 
-        queue.add(start);
-        visited[start.x][start.y] = true;
-        distanceQueue.add(0);
+        // A* Algorithm
+        java.util.PriorityQueue<Node> openSet = new java.util.PriorityQueue<>();
+        boolean[][] closedSet = new boolean[n][n];
+        int[][] gScore = new int[n][n];
 
-        int[] dx = {-1, 1, 0, 0};
-        int[] dy = {0, 0, -1, 1};
+        for (int i = 0; i < n; i++) {
+            java.util.Arrays.fill(gScore[i], Integer.MAX_VALUE);
+        }
 
-        while (!queue.isEmpty()) {
-            Point current = queue.poll();
-            int currentDist = distanceQueue.poll();
+        gScore[start.x][start.y] = 0;
+        int startH = Math.abs(start.x - end.x) + Math.abs(start.y - end.y);
+        openSet.add(new Node(start.x, start.y, 0, startH));
+
+        int[] dx = { -1, 1, 0, 0 };
+        int[] dy = { 0, 0, -1, 1 };
+
+        while (!openSet.isEmpty()) {
+            Node current = openSet.poll();
+
+            if (current.x == end.x && current.y == end.y) {
+                return current.g;
+            }
+
+            if (closedSet[current.x][current.y]) {
+                continue;
+            }
+            closedSet[current.x][current.y] = true;
 
             for (int i = 0; i < 4; i++) {
-                int newX = current.x + dx[i];
-                int newY = current.y + dy[i];
+                int nx = current.x + dx[i];
+                int ny = current.y + dy[i];
 
-                if (newX < 0 || newX >= n || newY < 0 || newY >= n) {
+                if (nx < 0 || nx >= n || ny < 0 || ny >= n)
                     continue;
-                }
-
-                if (visited[newX][newY]) {
+                if (grid[nx][ny].getMode() == Mode.WALL)
                     continue;
-                }
-
-                if (grid[newX][newY].getMode() == Mode.WALL) {
+                if (closedSet[nx][ny])
                     continue;
+
+                int tentativeG = current.g + 1;
+
+                if (tentativeG < gScore[nx][ny]) {
+                    gScore[nx][ny] = tentativeG;
+                    int h = Math.abs(nx - end.x) + Math.abs(ny - end.y);
+                    openSet.add(new Node(nx, ny, tentativeG, h));
                 }
-
-                Point neighbor = new Point(newX, newY);
-
-                if (neighbor.equals(end)) {
-                    return currentDist + 1;
-                }
-
-                visited[newX][newY] = true;
-                queue.add(neighbor);
-                distanceQueue.add(currentDist + 1);
             }
         }
 
@@ -106,8 +148,9 @@ public class Pathfinder {
 
     /**
      * Finds all positions of a specific mode in the maze
-     * @param grid The maze grid
-     * @param targetMode The mode to search for
+     * 
+     * @param grid           The maze grid
+     * @param targetMode     The mode to search for
      * @param targetPlayerId The player ID to match (0 for any player)
      * @return List of points where the target mode is found
      */
@@ -131,15 +174,17 @@ public class Pathfinder {
     /**
      * Calculates the total minimum moves to collect all forms in alphabetical order
      * and reach the finish, starting from the start position
-     * @param grid The maze grid
-     * @param startPlayerId The player ID to use for start, forms, and finish positions
+     * 
+     * @param grid          The maze grid
+     * @param startPlayerId The player ID to use for start, forms, and finish
+     *                      positions
      * @return Total minimum moves, or -1 if path doesn't exist
      */
     public static int calculateMinimumMoves(CellButton[][] grid, int startPlayerId) {
         List<Point> startPositions = findPositions(grid, Mode.START, startPlayerId);
         if (startPositions.isEmpty()) {
             new PathfindingErrorDialog(null,
-                "No start position found for player " + startPlayerId).show();
+                    "No start position found for player " + startPlayerId).show();
             return -1;
         }
         Point startPoint = startPositions.get(0);
@@ -147,7 +192,7 @@ public class Pathfinder {
         List<Point> finishPositions = findPositions(grid, Mode.FINISH, startPlayerId);
         if (finishPositions.isEmpty()) {
             new PathfindingErrorDialog(null,
-                "No finish position found for player " + startPlayerId).show();
+                    "No finish position found for player " + startPlayerId).show();
             return -1;
         }
         Point finishPoint = finishPositions.get(0);
@@ -157,7 +202,7 @@ public class Pathfinder {
             Mode formMode = Mode.valueOf("FORM_" + c);
             formModes.add(formMode);
         }
-        
+
         List<Point> formPoints = new ArrayList<>();
         for (Mode formMode : formModes) {
             List<Point> positions = findPositions(grid, formMode, startPlayerId);
@@ -165,12 +210,12 @@ public class Pathfinder {
                 formPoints.add(positions.get(0));
             }
         }
-        
+
         if (formPoints.isEmpty()) {
             int directPath = findShortestPath(grid, startPoint, finishPoint);
             if (directPath == -1) {
                 new PathfindingErrorDialog(null,
-                    "No path exists from start to finish").show();
+                        "No path exists from start to finish").show();
                 return -1;
             }
             return directPath;
@@ -182,7 +227,7 @@ public class Pathfinder {
         int pathToFirstForm = findShortestPath(grid, currentPoint, formPoints.get(0));
         if (pathToFirstForm == -1) {
             new PathfindingErrorDialog(null,
-                "No path exists from start to first form").show();
+                    "No path exists from start to first form").show();
             return -1;
         }
         totalMoves += pathToFirstForm;
@@ -192,7 +237,7 @@ public class Pathfinder {
             int path = findShortestPath(grid, currentPoint, formPoints.get(i));
             if (path == -1) {
                 new PathfindingErrorDialog(null,
-                    "No path exists between forms " + (char)('A' + i - 1) + " and " + (char)('A' + i)).show();
+                        "No path exists between forms " + (char) ('A' + i - 1) + " and " + (char) ('A' + i)).show();
                 return -1;
             }
             totalMoves += path;
@@ -202,11 +247,11 @@ public class Pathfinder {
         int pathToFinish = findShortestPath(grid, currentPoint, finishPoint);
         if (pathToFinish == -1) {
             new PathfindingErrorDialog(null,
-                "No path exists from last form to finish").show();
+                    "No path exists from last form to finish").show();
             return -1;
         }
         totalMoves += pathToFinish;
-        
+
         return totalMoves;
     }
 }

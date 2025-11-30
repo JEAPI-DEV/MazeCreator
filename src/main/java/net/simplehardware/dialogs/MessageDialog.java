@@ -4,12 +4,12 @@ import javax.swing.*;
 import java.awt.*;
 
 public class MessageDialog extends Dialog {
-    public MessageDialog(Component parent, String message, String title, int messageType) {
+    public MessageDialog(JFrame parent, String title, String message, int type) {
         super(parent, title);
         JPanel contentPanel = new JPanel(new BorderLayout(20, 20));
         contentPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        JLabel iconLabel = new JLabel(UIManager.getIcon("OptionPane." + getIconName(messageType)));
+        JLabel iconLabel = new JLabel(UIManager.getIcon("OptionPane." + getIconName(type)));
         contentPanel.add(iconLabel, BorderLayout.WEST);
 
         JTextArea messageArea = new JTextArea(message);

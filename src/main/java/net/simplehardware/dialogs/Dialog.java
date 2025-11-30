@@ -12,10 +12,12 @@ public abstract class Dialog {
     public Dialog(Component parent, String title) {
         this.parent = parent;
         this.parentFrame = (Frame) SwingUtilities.getWindowAncestor(parent);
-        if (parentFrame == null) parentFrame = new Frame();
+        if (parentFrame == null)
+            parentFrame = new Frame();
         this.title = title;
         this.dialog = new JDialog(parentFrame, title, true);
         dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        dialog.setMinimumSize(new java.awt.Dimension(400, 200));
     }
 
     protected void setContent(JPanel contentPanel) {

@@ -220,7 +220,8 @@ public class ToolbarFactory {
                     numForms = 1;
                 if (numForms > 15)
                     numForms = 15;
-            } catch (NumberFormatException ignored) {}
+            } catch (NumberFormatException ignored) {
+            }
 
             String movesInput = JOptionPane.showInputDialog(editor, "Enter preferred move count (0 for max distance):",
                     "0");
@@ -234,40 +235,83 @@ public class ToolbarFactory {
                 }
             }
 
-            SymmetricGenerator.generate(grid, numForms, preferredMoves);
+            final int finalNumForms = numForms;
+            final int finalPreferredMoves = preferredMoves;
 
-            // Calculate min moves for P1, P2, P3, P4
-            int movesP1 = Pathfinder.calculateMinimumMoves(grid.getCells(), 1);
-            int movesP2 = Pathfinder.calculateMinimumMoves(grid.getCells(), 2);
-            int movesP3 = Pathfinder.calculateMinimumMoves(grid.getCells(), 3);
-            int movesP4 = Pathfinder.calculateMinimumMoves(grid.getCells(), 4);
+            JDialog progressDialog = new JDialog(editor, "Generating...", true);
+            JProgressBar progressBar = new JProgressBar(0, 100);
+            progressBar.setStringPainted(true);
+            progressDialog.add(progressBar);
+            progressDialog.setSize(300, 100);
+            progressDialog.setLocationRelativeTo(editor);
+            progressDialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
 
-            StringBuilder msg = new StringBuilder("Generation Complete!\n\n");
-            msg.append("Player 1 Min Moves: ").append(movesP1 == -1 ? "Impossible" : movesP1).append("\n");
-            msg.append("Player 2 Min Moves: ").append(movesP2 == -1 ? "Impossible" : movesP2).append("\n");
-            msg.append("Player 3 Min Moves: ").append(movesP3 == -1 ? "Impossible" : movesP3).append("\n");
-            msg.append("Player 4 Min Moves: ").append(movesP4 == -1 ? "Impossible" : movesP4).append("\n\n");
+            SwingWorker<Void, Integer> worker = new SwingWorker<>() {
+                @Override
+                protected Void doInBackground() throws Exception {
+                    SymmetricGenerator.generate(grid, finalNumForms, finalPreferredMoves, this::publish);
+                    return null;
+                }
 
-            if (movesP1 != -1 && movesP2 != -1 && movesP3 != -1 && movesP4 != -1) {
-                int maxMoves = Math.max(Math.max(movesP1, movesP2), Math.max(movesP3, movesP4));
-                int minMoves = Math.min(Math.min(movesP1, movesP2), Math.min(movesP3, movesP4));
-                int diff = maxMoves - minMoves;
+                @Override
+                protected void process(List<Integer> chunks) {
+                    if (!chunks.isEmpty()) {
+                        progressBar.setValue(chunks.get(chunks.size() - 1));
+                    }
+                }
 
-                // Relaxed matching: +/- 10%
-                double allowedDiff = minMoves * 0.10;
+                @Override
+                protected void done() {
+                    progressDialog.dispose();
+                    try {
+                        get();
 
-                if (diff <= allowedDiff)
-                    msg.append("Evenly Matched (Max Diff: ").append(diff).append(", Allowed: ")
-                            .append((int) allowedDiff).append(")");
-                else
-                    msg.append("Not Matched (Max Diff: ").append(diff).append(", Allowed: ").append((int) allowedDiff)
-                            .append(")");
-            } else {
-                msg.append("Cannot compare (path missing for some players)");
-            }
+                        // Calculate min moves for P1, P2, P3, P4
+                        int movesP1 = Pathfinder.calculateMinimumMoves(grid.getCells(), 1);
+                        int movesP2 = Pathfinder.calculateMinimumMoves(grid.getCells(), 2);
+                        int movesP3 = Pathfinder.calculateMinimumMoves(grid.getCells(), 3);
+                        int movesP4 = Pathfinder.calculateMinimumMoves(grid.getCells(), 4);
 
-            JOptionPane.showMessageDialog(editor, msg.toString(), "Symmetric Generation Result",
-                    JOptionPane.INFORMATION_MESSAGE);
+                        StringBuilder msg = new StringBuilder("Generation Complete!\n\n");
+                        msg.append("Player 1 Min Moves: ").append(movesP1 == -1 ? "Impossible" : movesP1).append("\n");
+                        msg.append("Player 2 Min Moves: ").append(movesP2 == -1 ? "Impossible" : movesP2).append("\n");
+                        msg.append("Player 3 Min Moves: ").append(movesP3 == -1 ? "Impossible" : movesP3).append("\n");
+                        msg.append("Player 4 Min Moves: ").append(movesP4 == -1 ? "Impossible" : movesP4)
+                                .append("\n\n");
+
+                        if (movesP1 != -1 && movesP2 != -1 && movesP3 != -1 && movesP4 != -1) {
+                            int maxMoves = Math.max(Math.max(movesP1, movesP2), Math.max(movesP3, movesP4));
+                            int minMoves = Math.min(Math.min(movesP1, movesP2), Math.min(movesP3, movesP4));
+                            int diff = maxMoves - minMoves;
+
+                            double allowedDiff = minMoves * 0.10;
+
+                            if (diff == 0)
+                                msg.append("Perfectly Matched!");
+                            else if (diff <= allowedDiff)
+                                msg.append("Evenly Matched (Max Diff: ").append(diff).append(", Allowed: ")
+                                        .append((int) allowedDiff).append(")");
+                            else
+                                msg.append("Not Matched (Max Diff: ").append(diff).append(", Allowed: ")
+                                        .append((int) allowedDiff).append(")");
+                        } else {
+                            msg.append("Cannot compare (path missing for some players)");
+                        }
+
+                        JOptionPane.showMessageDialog(editor, msg.toString(), "Symmetric Generation Result",
+                                JOptionPane.INFORMATION_MESSAGE);
+                        grid.getScrollPane().repaint();
+
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                        JOptionPane.showMessageDialog(editor, "Error during generation: " + ex.getMessage(), "Error",
+                                JOptionPane.ERROR_MESSAGE);
+                    }
+                }
+            };
+
+            worker.execute();
+            progressDialog.setVisible(true);
         });
         return genSymBtn;
     }
