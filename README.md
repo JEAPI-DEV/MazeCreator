@@ -33,24 +33,6 @@ This project is a maze creator application built in Java. It allows users to cre
    that needs to be collected first after that if it exists we need to collect B(pid) ...
 - There were also Sheets, but I did not figure out at this point what they do.
 
-## Features
-
-### Form Collection System  
-- **Forms A-Z**: Complete alphabet of collectible forms
-- **Sequential Collection**: Players must collect forms in alphabetical order
-- **Player Ownership**: Each form belongs to a specific player (1-4)
-
-### Important
-- **Export**: JSON format compatible with Maze Runner game engine
-- **Zoom Function**: You can zoom either with CTRL + Mousewheel or with CTRL +/-
-
-## Project Structure
-
-The project is organized as follows:
-
-*   **`src/main/java/net/simplehardware/`**: Contains the source code for the application.
-*   **`Examples/`**: Contains example maze configurations.
-    *   **`WAM.json`**: Original example maze definition in JSON format.
 ## How to run
 
 ### From IDE
@@ -64,7 +46,7 @@ maven install
 ### Pre-built Release
 Download the Release version and run with:
 ```bash
-java -jar MazeCreator_1_3_1.jar
+java -jar MazeCreator_1_4.jar
 ```
 
 ## Usage
@@ -81,28 +63,3 @@ The enhanced maze format supports:
 - **Player Encoding**: Each element includes player ownership (1-8)
 - **Sequential Forms**: Players must collect A, B, C... in exact order
 - **JSON Structure**: Compatible with Maze Runner game engine
-
-## Key Components
-
-### Core Classes
-*   **`MazeEditor.java`**: Main application window with enhanced UI and mode management
-*   **`MazeGrid.java`**: Interactive maze grid with zoom and editing capabilities  
-*   **`CellButton.java`**: Individual maze cell with form rendering and player colors
-*   **`Mode.java`**: Enhanced enum supporting Floor, Wall, Start, Finish, Forms A-Z, and Sheet
-*   **`MazeIO.java`**: Advanced JSON import/export with form encoding support
-*   **`ToolbarFactory.java`**: UI factory creating main toolbar and organized forms panel
-
-### Some Features
-*   **`MazeValidator.java`**: Comprehensive maze validation with form sequence checking
-*   **`MazeTemplates.java`**: Template system with pre-built balanced maze layouts
-*   **`MazeInfoData.java`**: Enhanced data structure supporting form definitions
-*   **`FormInfo.java`**: Form metadata class for JSON serialization
-
-### Legacy Components  
-*   **`LabyrinthGenerator.java`**: Original maze structure generator (experimental)
-
-## Requirements
-
-- Java 21+
-- Gson library (used: gson-2.13.2.jar)
-- Swing UI framework
