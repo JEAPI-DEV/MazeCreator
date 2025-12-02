@@ -1,6 +1,9 @@
 package net.simplehardware;
 
+import net.simplehardware.generators.SymmetricGenerator;
 import net.simplehardware.models.Mode;
+import net.simplehardware.utils.MazeIO;
+
 import java.awt.*;
 import javax.swing.*;
 
@@ -70,6 +73,7 @@ public class MazeEditor extends JFrame {
         int prefSteps = 20;
         int mazeSize = 20;
         String outputFile = "output.json";
+        String mazeName = "CLI_Generated_Maze";
 
         for (int i = 1; i < args.length; i++) {
             switch (args[i]) {
@@ -85,6 +89,11 @@ public class MazeEditor extends JFrame {
                     if (i + 1 < args.length)
                         mazeSize = Integer.parseInt(args[++i]);
                     break;
+                case "--name":
+                    if (i + 1 < args.length){
+                        mazeName = args[++i];
+                    }
+                    break;
                 case "--output":
                     // Check if next arg is not a flag, if so use it as filename
                     // Otherwise, we might expect the filename at the end
@@ -93,9 +102,9 @@ public class MazeEditor extends JFrame {
                     }
                     break;
                 default:
-                    if (!args[i].startsWith("-")) {
-                        outputFile = args[i];
-                    }
+//                    if (!args[i].startsWith("-")) {
+//                        outputFile = args[i];
+//                    }
                     break;
             }
         }
@@ -107,12 +116,10 @@ public class MazeEditor extends JFrame {
         System.out.println("Output: " + outputFile);
 
         MazeGrid grid = new MazeGrid(mazeSize, null);
-        net.simplehardware.generators.SymmetricGenerator.generate(grid, forms, prefSteps, progress -> {
-            System.out.println("Progress: " + progress + "%");
-        });
+        SymmetricGenerator.generate(grid, forms, prefSteps, progress -> {});
 
         try {
-            net.simplehardware.utils.MazeIO.exportJsonToFile(grid, "CLI_Generated_Maze", outputFile);
+            MazeIO.exportJsonToFile(grid, mazeName, outputFile);
             System.out.println("Maze generated and saved to " + outputFile);
         } catch (java.io.IOException e) {
             System.err.println("Failed to save maze: " + e.getMessage());

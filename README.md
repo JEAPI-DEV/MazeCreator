@@ -64,8 +64,9 @@ size and min. steps you want your maze to be solvable in.
 - prefSteps (min) (default : 20)
 - maze Size (default : 20)
 - and output json file
+- name default (CLI_Generated_Maze)
 ```bash
- java -jar MazeCreator_1_4_1.jar --generateMaze --forms 2 --prefSteps 20 --output --mazesize 20 "simple.json"
+java -jar MazeCreator-1_4_2.jar --generateMaze --forms 2 --prefSteps 20  --name "Simple" --output "simple.json"
 ```
 
 ## Maze Format
