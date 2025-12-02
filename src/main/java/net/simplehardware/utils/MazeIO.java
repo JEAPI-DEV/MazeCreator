@@ -27,45 +27,41 @@ import net.simplehardware.models.MazeInfoData;
 public class MazeIO {
 
     public static void loadFromJson(
-        MazeEditor editor,
-        MazeGrid grid,
-        JSpinner gridSizeSpinner
-    ) {
+            MazeEditor editor,
+            MazeGrid grid,
+            JSpinner gridSizeSpinner) {
         JFileChooser chooser = new JFileChooser();
         chooser.setDialogTitle("Select Maze JSON to Load");
         if (chooser.showOpenDialog(editor) == JFileChooser.APPROVE_OPTION) {
             try (Reader reader = new FileReader(chooser.getSelectedFile())) {
                 MazeInfoData data = new Gson().fromJson(
-                    reader,
-                    MazeInfoData.class
-                );
+                        reader,
+                        MazeInfoData.class);
                 applyMazeData(grid, data, gridSizeSpinner);
                 new MessageDialog(
-                editor,
-                    "Maze loaded successfully!",
-                    "Load Complete",
-                    JOptionPane.INFORMATION_MESSAGE
-                            ).show();
+                        editor,
+                        "Maze loaded successfully!",
+                        "Load Complete",
+                        JOptionPane.INFORMATION_MESSAGE).show();
             } catch (Exception ex) {
                 new MessageDialog(
-                    editor,
-                    "Failed to load: " + ex.getMessage(),
-                    "Load Error",
-                    JOptionPane.ERROR_MESSAGE
-                ).show();
+                        editor,
+                        "Failed to load: " + ex.getMessage(),
+                        "Load Error",
+                        JOptionPane.ERROR_MESSAGE).show();
             }
         }
     }
 
     private static void applyMazeData(
-        MazeGrid grid,
-        MazeInfoData data,
-        JSpinner spinner
-    ) {
-        if (data.maze == null) return;
+            MazeGrid grid,
+            MazeInfoData data,
+            JSpinner spinner) {
+        if (data.maze == null)
+            return;
         String[] rows = data.maze.split("/");
         int numRows = rows.length;
-        int numCols = rows[0].length() / 2;  // Each cell is 2 characters (type + placeholder/playerid)
+        int numCols = rows[0].length() / 2; // Each cell is 2 characters (type + placeholder/playerid)
         int gridSize = Math.max(numRows, numCols);
         grid.resizeGrid(gridSize);
         spinner.setValue(gridSize);
@@ -76,7 +72,8 @@ public class MazeIO {
             int rowLength = row.length() / 2;
 
             for (int x = 0; x < rowLength && x < gridSize; x++) {
-                if (2 * x + 1 >= row.length()) break;
+                if (2 * x + 1 >= row.length())
+                    break;
                 char chType = row.charAt(2 * x);
                 char chOwner = row.charAt(2 * x + 1);
                 int pid = Character.isDigit(chOwner) ? chOwner - '0' : 0;
@@ -88,11 +85,42 @@ public class MazeIO {
 
     public static void exportJson(MazeEditor editor, MazeGrid grid) {
         String mazeName = JOptionPane.showInputDialog(
-            editor,
-            "Enter Maze Name:"
-        );
-        if (mazeName == null) return;
+                editor,
+                "Enter Maze Name:");
+        if (mazeName == null)
+            return;
 
+        MazeInfoData mazeData = generateMazeData(grid, mazeName);
+
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        JFileChooser chooser = new JFileChooser();
+        chooser.setSelectedFile(new File(mazeName + ".json"));
+        if (chooser.showSaveDialog(editor) == JFileChooser.APPROVE_OPTION) {
+            try (
+                    FileWriter writer = new FileWriter(chooser.getSelectedFile())) {
+                gson.toJson(mazeData, writer);
+                new MessageDialog(editor,
+                        "Maze saved successfully!",
+                        "Save Complete",
+                        JOptionPane.INFORMATION_MESSAGE).show();
+            } catch (IOException e) {
+                new MessageDialog(
+                        editor,
+                        "Error saving: " + e.getMessage(),
+                        "Save Error",
+                        JOptionPane.ERROR_MESSAGE).show();
+            }
+        }
+    }
+
+    /**
+     * Generate MazeInfoData from a MazeGrid (core logic extracted for reuse).
+     * 
+     * @param grid     The maze grid to convert
+     * @param mazeName Name of the maze
+     * @return MazeInfoData object ready for JSON serialization
+     */
+    private static MazeInfoData generateMazeData(MazeGrid grid, String mazeName) {
         List<String> lines = new ArrayList<>();
         Set<Character> formsFound = new HashSet<>();
         for (int y = 0; y < grid.getCells().length; y++) {
@@ -135,28 +163,22 @@ public class MazeIO {
             maze.forms.add(new FormInfo(formId, formName));
         }
         maze.maze = String.join("/", lines);
+        return maze;
+    }
 
+    /**
+     * Export maze to JSON file without GUI dependencies (for CLI usage).
+     * 
+     * @param grid       The maze grid to export
+     * @param mazeName   Name of the maze
+     * @param outputPath Path to output JSON file
+     * @throws IOException If file writing fails
+     */
+    public static void exportJsonToFile(MazeGrid grid, String mazeName, String outputPath) throws IOException {
+        MazeInfoData mazeData = generateMazeData(grid, mazeName);
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        JFileChooser chooser = new JFileChooser();
-        chooser.setSelectedFile(new File( mazeName + ".json"));
-        if (chooser.showSaveDialog(editor) == JFileChooser.APPROVE_OPTION) {
-            try (
-                FileWriter writer = new FileWriter(chooser.getSelectedFile())
-            ) {
-                gson.toJson(maze, writer);
-                new MessageDialog(                    editor,
-                    "Maze saved successfully!",
-                    "Save Complete",
-                    JOptionPane.INFORMATION_MESSAGE
-                ).show();
-            } catch (IOException e) {
-                new MessageDialog(
-                        editor,
-                    "Error saving: " + e.getMessage(),
-                    "Save Error",
-                    JOptionPane.ERROR_MESSAGE
-                ).show();
-            }
+        try (FileWriter writer = new FileWriter(outputPath)) {
+            gson.toJson(mazeData, writer);
         }
     }
 }

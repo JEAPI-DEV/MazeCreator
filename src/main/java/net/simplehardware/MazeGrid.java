@@ -21,34 +21,39 @@ public class MazeGrid {
         this.gridSize = size;
         this.editor = editor;
         buildGridPanel();
-        scrollPane = new JScrollPane(gridPanel);
-        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
-        scrollPane.getHorizontalScrollBar().setUnitIncrement(16);
-        scrollPane.addMouseWheelListener(new ZoomHandler());
-        ZoomHandler zoomHandler = new ZoomHandler();
-        scrollPane.addMouseWheelListener(zoomHandler);
 
+        // Only initialize GUI components if not in headless mode
+        if (editor != null) {
+            scrollPane = new JScrollPane(gridPanel);
+            scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+            scrollPane.getHorizontalScrollBar().setUnitIncrement(16);
+            scrollPane.addMouseWheelListener(new ZoomHandler());
+            ZoomHandler zoomHandler = new ZoomHandler();
+            scrollPane.addMouseWheelListener(zoomHandler);
 
-        scrollPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
-                .put(KeyStroke.getKeyStroke("control EQUALS"), "zoomIn");
-        scrollPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
-                .put(KeyStroke.getKeyStroke("control PLUS"), "zoomIn");
-        scrollPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
-                .put(KeyStroke.getKeyStroke("control MINUS"), "zoomOut");
+            scrollPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
+                    .put(KeyStroke.getKeyStroke("control EQUALS"), "zoomIn");
+            scrollPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
+                    .put(KeyStroke.getKeyStroke("control PLUS"), "zoomIn");
+            scrollPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
+                    .put(KeyStroke.getKeyStroke("control MINUS"), "zoomOut");
 
-        scrollPane.getActionMap().put("zoomIn", new AbstractAction() {
-            @Override
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                zoomHandler.keyboardZoom(true);
-            }
-        });
-        scrollPane.getActionMap().put("zoomOut", new AbstractAction() {
-            @Override
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                zoomHandler.keyboardZoom(false);
-            }
-        });
-
+            scrollPane.getActionMap().put("zoomIn", new AbstractAction() {
+                @Override
+                public void actionPerformed(java.awt.event.ActionEvent e) {
+                    zoomHandler.keyboardZoom(true);
+                }
+            });
+            scrollPane.getActionMap().put("zoomOut", new AbstractAction() {
+                @Override
+                public void actionPerformed(java.awt.event.ActionEvent e) {
+                    zoomHandler.keyboardZoom(false);
+                }
+            });
+        } else {
+            // Headless mode - no scroll pane needed
+            scrollPane = null;
+        }
     }
 
     private void buildGridPanel() {
@@ -57,7 +62,8 @@ public class MazeGrid {
         for (int y = 0; y < gridSize; y++) {
             for (int x = 0; x < gridSize; x++) {
                 CellButton cell = new CellButton(x, y, editor);
-                cell.setPreferredSize(new Dimension((int)(BASE_CELL_SIZE * zoomScale), (int)(BASE_CELL_SIZE * zoomScale)));
+                cell.setPreferredSize(
+                        new Dimension((int) (BASE_CELL_SIZE * zoomScale), (int) (BASE_CELL_SIZE * zoomScale)));
                 cells[x][y] = cell;
                 gridPanel.add(cell);
             }
@@ -69,7 +75,8 @@ public class MazeGrid {
      * then create fresh grid (no copy).
      */
     public void resizeGrid(int newSize) {
-        if (newSize == gridSize) return;
+        if (newSize == gridSize)
+            return;
 
         Mode[][] oldModes = null;
         int[][] oldPlayerIds = null;
@@ -135,17 +142,23 @@ public class MazeGrid {
 
         @Override
         public void mouseWheelMoved(MouseWheelEvent e) {
-            if (!e.isControlDown()) return;
-            if (gridSize <= 20) return;
+            if (!e.isControlDown())
+                return;
+            if (gridSize <= 20)
+                return;
 
             double oldScale = zoomScale;
             int rotation = e.getWheelRotation();
-            if (rotation < 0) zoomScale = Math.min(zoomScale + STEP, MAX_ZOOM);
-            else zoomScale = Math.max(zoomScale - STEP, MIN_ZOOM);
+            if (rotation < 0)
+                zoomScale = Math.min(zoomScale + STEP, MAX_ZOOM);
+            else
+                zoomScale = Math.max(zoomScale - STEP, MIN_ZOOM);
 
             // Snap back to 1.0 when close
-            if (Math.abs(zoomScale - 1.0) < 0.05) zoomScale = 1.0;
-            if (zoomScale == oldScale) return;
+            if (Math.abs(zoomScale - 1.0) < 0.05)
+                zoomScale = 1.0;
+            if (zoomScale == oldScale)
+                return;
 
             Point viewPos = scrollPane.getViewport().getViewPosition();
             Point mouse = e.getPoint();
@@ -168,8 +181,10 @@ public class MazeGrid {
                     ? Math.min(zoomScale + STEP, MAX_ZOOM)
                     : Math.max(zoomScale - STEP, MIN_ZOOM);
 
-            if (Math.abs(zoomScale - 1.0) < 0.05) zoomScale = 1.0;
-            if (zoomScale == oldScale) return;
+            if (Math.abs(zoomScale - 1.0) < 0.05)
+                zoomScale = 1.0;
+            if (zoomScale == oldScale)
+                return;
 
             applyZoom();
         }
